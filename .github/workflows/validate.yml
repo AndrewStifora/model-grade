@@ -9,6 +9,12 @@ on:
 permissions:
   contents: read
 
+# Both jobs install over a fake home that already holds an old copy plus a backup beside it
+# (as the 1.2.0 installer left them), update from the built package while running from the
+# installed copy, and check that skills/ ends up holding only model-grade and mg, with every
+# backup under model-grade-backups/. Then they install from a clone that already sits at
+# skills/model-grade (the git route), which must leave that folder alone.
+
 jobs:
   check:
     name: Self-check and installer smoke test (Linux)
@@ -22,19 +28,43 @@ jobs:
         run: python scripts/check_repo.py
       - name: Build the package
         run: python scripts/build_package.py --out "$RUNNER_TEMP/pkg/model-grade-install.zip"
-      - name: Install into a fake home
-        run: CLAUDE_HOME="$RUNNER_TEMP/fakehome/.claude" bash install.sh
-      - name: Update from the package into the same fake home
-        run: MODEL_GRADE_HOME="$RUNNER_TEMP/fakehome/.claude" MODEL_GRADE_ZIP="$RUNNER_TEMP/pkg/model-grade-install.zip" bash scripts/update.sh
+      - name: Install over an old copy and a leftover backup
+        run: |
+          home="$RUNNER_TEMP/fakehome/.claude"
+          mkdir -p "$home/skills/model-grade" "$home/skills/model-grade.bak-20260101-000000"
+          echo 0.0.0 > "$home/skills/model-grade/VERSION"
+          echo old > "$home/skills/model-grade/SKILL.md"
+          echo older > "$home/skills/model-grade.bak-20260101-000000/SKILL.md"
+          CLAUDE_HOME="$home" bash install.sh
+      - name: Update from the package, run from the installed copy
+        run: |
+          home="$RUNNER_TEMP/fakehome/.claude"
+          sleep 1
+          MODEL_GRADE_HOME="$home" MODEL_GRADE_ZIP="$RUNNER_TEMP/pkg/model-grade-install.zip" bash "$home/skills/model-grade/scripts/update.sh"
       - name: Verify the layout
         run: |
           set -e
-          test -f "$RUNNER_TEMP/fakehome/.claude/skills/model-grade/SKILL.md"
-          test -f "$RUNNER_TEMP/fakehome/.claude/skills/mg/SKILL.md"
-          count="$(ls "$RUNNER_TEMP/fakehome/.claude/agents"/mg-run-*.md | wc -l)"
+          home="$RUNNER_TEMP/fakehome/.claude"
+          test -f "$home/skills/model-grade/SKILL.md"
+          test -f "$home/skills/mg/SKILL.md"
+          count="$(ls "$home/agents"/mg-run-*.md | wc -l)"
           test "$count" -ge 6
-          ls -d "$RUNNER_TEMP/fakehome/.claude/skills/"model-grade.bak-* >/dev/null
-          echo "layout ok, $count executors, previous copy backed up"
+          dirs="$(ls -1 "$home/skills" | sort | paste -sd, -)"
+          test "$dirs" = "mg,model-grade" || { echo "skills/ holds [$dirs]"; exit 1; }
+          test -d "$home/model-grade-backups/model-grade.bak-20260101-000000"
+          test "$(ls -1 "$home/model-grade-backups" | grep -Ec '^[0-9]{8}-[0-9]{6}$')" -ge 2
+          echo "layout ok, $count executors, backups kept outside skills/"
+      - name: Install from a clone already at skills/model-grade (git route)
+        run: |
+          set -e
+          home="$RUNNER_TEMP/fakehome2/.claude"
+          mkdir -p "$home/skills"
+          cp -R "$PWD" "$home/skills/model-grade"
+          CLAUDE_HOME="$home" bash "$home/skills/model-grade/install.sh"
+          test -f "$home/skills/model-grade/SKILL.md"
+          test ! -e "$home/model-grade-backups"
+          test "$(ls -1 "$home/skills" | sort | paste -sd, -)" = "mg,model-grade"
+          echo "in-place install ok"
 
   windows:
     name: Installer smoke test (Windows)
@@ -44,17 +74,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build, install, update, verify
+      - name: Build, install over an old copy, update from the installed copy, verify
         shell: pwsh
         run: |
           $target = Join-Path $env:RUNNER_TEMP "fakehome\.claude"
           $zip = Join-Path $env:RUNNER_TEMP "pkg\model-grade-install.zip"
           python scripts/build_package.py --out $zip
+          New-Item -ItemType Directory -Force -Path "$target\skills\model-grade", "$target\skills\model-grade.bak-20260101-000000" | Out-Null
+          Set-Content "$target\skills\model-grade\VERSION" "0.0.0"
+          Set-Content "$target\skills\model-grade\SKILL.md" "old"
+          Set-Content "$target\skills\model-grade.bak-20260101-000000\SKILL.md" "older"
           pwsh -File install.ps1 -Target $target
-          pwsh -File scripts/update.ps1 -Target $target -ZipPath $zip
-          if (-not (Test-Path (Join-Path $target "skills\model-grade\SKILL.md"))) { throw "skill missing" }
-          if (-not (Test-Path (Join-Path $target "skills\mg\SKILL.md"))) { throw "alias missing" }
-          $agents = (Get-ChildItem (Join-Path $target "agents") -Filter "mg-run-*.md").Count
+          if ($LASTEXITCODE) { throw "install.ps1 failed" }
+          Start-Sleep -Seconds 1
+          pwsh -File "$target\skills\model-grade\scripts\update.ps1" -Target $target -ZipPath $zip
+          if ($LASTEXITCODE) { throw "update.ps1 failed" }
+          if (-not (Test-Path "$target\skills\model-grade\SKILL.md")) { throw "skill missing" }
+          if (-not (Test-Path "$target\skills\mg\SKILL.md")) { throw "alias missing" }
+          $agents = (Get-ChildItem "$target\agents" -Filter "mg-run-*.md").Count
           if ($agents -lt 6) { throw "expected at least six executors, found $agents" }
-          if (-not (Get-ChildItem (Join-Path $target "skills") -Directory -Filter "model-grade.bak-*")) { throw "previous copy was not backed up" }
-          Write-Host "layout ok, $agents executors, previous copy backed up"
+          $dirs = (Get-ChildItem "$target\skills" -Directory | Select-Object -ExpandProperty Name | Sort-Object) -join ","
+          if ($dirs -ne "mg,model-grade") { throw "skills/ holds [$dirs]" }
+          $baks = Get-ChildItem "$target\model-grade-backups" -Directory | Select-Object -ExpandProperty Name
+          if ($baks -notcontains "model-grade.bak-20260101-000000") { throw "leftover backup was not moved" }
+          if (($baks | Where-Object { $_ -match '^\d{8}-\d{6}$' }).Count -lt 2) { throw "previous copies were not backed up" }
+          Write-Host "layout ok, $agents executors, backups kept outside skills/"
+      - name: Install from a clone already at skills\model-grade (git route)
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP "fakehome2\.claude"
+          New-Item -ItemType Directory -Force -Path "$target\skills" | Out-Null
+          Copy-Item -Path $PWD.Path -Destination "$target\skills\model-grade" -Recurse
+          pwsh -File "$target\skills\model-grade\install.ps1" -Target $target
+          if ($LASTEXITCODE) { throw "install.ps1 failed" }
+          if (-not (Test-Path "$target\skills\model-grade\SKILL.md")) { throw "in-place install lost the clone" }
+          if (Test-Path "$target\model-grade-backups") { throw "in-place install made a backup" }
+          $dirs = (Get-ChildItem "$target\skills" -Directory | Select-Object -ExpandProperty Name | Sort-Object) -join ","
+          if ($dirs -ne "mg,model-grade") { throw "skills/ holds [$dirs]" }
+          Write-Host "in-place install ok"
