@@ -1,0 +1,16 @@
+{
+  "name": "andrewstifora",
+  "owner": {
+    "name": "Andrew Stifora",
+    "url": "https://github.com/AndrewStifora"
+  },
+  "description": "Claude Code skills by Andrew Stifora.",
+  "plugins": [
+    {
+      "name": "model-grade",
+      "source": "./",
+      "category": "Developer Tools",
+      "description": "Grade a prompt and pick the cheapest Claude model and effort level that will complete it well. /model-grade, /mg, and the mg-run-* executors."
+    }
+  ]
+}

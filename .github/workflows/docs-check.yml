@@ -1,0 +1,69 @@
+name: docs-check
+
+# Weekly early warning: re-fetches the Anthropic pages the rubric is built from and
+# opens (or updates) an issue when any of them changed or a new model page appeared.
+# It never edits the repository; a maintainer works through references/UPDATING.md
+# and runs `python scripts/refresh_docs.py --write` when the rubric has caught up.
+
+on:
+  schedule:
+    - cron: "17 13 * * 1"   # Mondays, 13:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore last week's page cache (for diffs)
+        uses: actions/cache/restore@v4
+        with:
+          path: references/docs-cache
+          key: docs-cache-${{ github.run_id }}
+          restore-keys: docs-cache-
+      - name: Check the Anthropic docs
+        id: refresh
+        run: |
+          set +e
+          python scripts/refresh_docs.py --cache-only | tee report.txt
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Save this week's page cache
+        uses: actions/cache/save@v4
+        with:
+          path: references/docs-cache
+          key: docs-cache-${{ github.run_id }}
+      - name: Open or update the issue
+        if: steps.refresh.outputs.code == '3'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create docs-changed --color D93F0B --description "Anthropic docs changed; rubric review needed" --force
+          {
+            echo "Detected by the weekly docs check on $(date -u +%F)."
+            echo
+            echo '```'
+            cat report.txt
+            echo '```'
+            echo
+            echo 'Work through `references/UPDATING.md`, then run `python scripts/refresh_docs.py --write` and bump `VERSION` and `CHANGELOG.md`.'
+          } > body.md
+          number="$(gh issue list --label docs-changed --state open --json number --jq '.[0].number')"
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body-file body.md
+            echo "updated issue #$number"
+          else
+            gh issue create --title "Anthropic docs changed: review the rubric" --label docs-changed --body-file body.md
+          fi
+      - name: Fail loudly if the script itself broke
+        if: steps.refresh.outputs.code != '0' && steps.refresh.outputs.code != '3'
+        run: |
+          echo "refresh_docs.py exited with ${{ steps.refresh.outputs.code }}"
+          exit 1

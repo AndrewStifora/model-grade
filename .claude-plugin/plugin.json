@@ -1,0 +1,23 @@
+{
+  "name": "model-grade",
+  "displayName": "model-grade",
+  "version": "1.2.0",
+  "description": "Grade a prompt and pick the cheapest Claude model and effort level that will complete it well, so Opus or Fable is never spent on work Sonnet or Haiku can do. Adds /model-grade, the /mg shorthand, and the mg-run-* executors used by --run.",
+  "author": {
+    "name": "Andrew Stifora",
+    "url": "https://github.com/AndrewStifora"
+  },
+  "homepage": "https://github.com/AndrewStifora/model-grade",
+  "repository": "https://github.com/AndrewStifora/model-grade",
+  "license": "MIT",
+  "keywords": ["claude-code", "skill", "model-routing", "effort", "cost-optimization"],
+  "skills": ["./", "./assets/mg"],
+  "agents": [
+    "./assets/agents/mg-run-low.md",
+    "./assets/agents/mg-run-medium.md",
+    "./assets/agents/mg-run-high.md",
+    "./assets/agents/mg-run-xhigh.md",
+    "./assets/agents/mg-run-max.md",
+    "./assets/agents/mg-run-opus5.md"
+  ]
+}

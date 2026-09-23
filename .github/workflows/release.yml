@@ -1,0 +1,36 @@
+name: release
+
+# Pushing a tag like v1.2.0 builds model-grade-install.zip and publishes a GitHub
+# Release with the matching CHANGELOG section as its notes. The tag must equal
+# the VERSION file, so a release is never mislabeled.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Repository self-check
+        run: python scripts/check_repo.py
+      - name: Tag must match VERSION
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME does not match VERSION $version"; exit 1; }
+      - name: Build the package and the notes
+        run: |
+          python scripts/build_package.py --out dist/model-grade-install.zip
+          python scripts/build_package.py --notes "${GITHUB_REF_NAME#v}" > dist/notes.md
+          cat dist/notes.md
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/model-grade-install.zip --title "model-grade $GITHUB_REF_NAME" --notes-file dist/notes.md

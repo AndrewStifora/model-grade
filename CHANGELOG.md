@@ -8,7 +8,8 @@
 - `scripts/refresh_docs.py` discovers prompt-engineering and model pages from the docs index, hashes them, and diffs changes; `references/sources.json` is the manifest; `references/UPDATING.md` is the maintainer checklist for a new model.
 - Repository layout: the skill folder is the repo root; the `/mg` alias and executors ship under `assets/` and are installed by `install.ps1` / `install.sh` or refreshed by `update`.
 - Executor `mg-run-opus5` added (pinned to `claude-opus-5` at high) for verdicts that name Opus 5 explicitly.
-- Evals: expectations updated for Opus 5.5; eval 24 (multi-hour migration with subagents) added.
+- Evals: expectations updated for Opus 5.5; eval 24 (multi-hour migration with subagents) added. Step-down rule tightened: a flaky, slow, or blind checker does not earn it.
+- Repository: MIT license, `validate` / `docs-check` / `release` workflows, plugin and marketplace manifests (experimental install path), contributor guide, security policy, issue and pull-request templates, the eval report under `docs/`, and the social preview image with the script that composes it.
 
 ## 1.1.0 (2026-09-20)
 

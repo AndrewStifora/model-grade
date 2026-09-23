@@ -1,0 +1,45 @@
+name: Verdict disagreement
+description: The grader picked a model or effort you think is wrong.
+labels: ["verdict"]
+body:
+  - type: textarea
+    id: prompt
+    attributes:
+      label: The prompt
+      description: What you asked the grader to grade, or a faithful paraphrase. Include the context it had (attached files, repo size, connectors, an earlier conversation) if that matters.
+    validations:
+      required: true
+  - type: input
+    id: got
+    attributes:
+      label: Verdict you got
+      placeholder: "Opus 5.5 @ medium (confidence 0.7)"
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Verdict you expected
+      placeholder: "Sonnet 5 @ high"
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The rubric only changes where Anthropic's docs support the change. If you can quote the sentence that backs your expectation, paste it with the page URL.
+  - type: input
+    id: version
+    attributes:
+      label: model-grade version
+      description: From `/mg version` or the VERSION file.
+      placeholder: "1.2.0"
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where it ran
+      options:
+        - In a Claude Code session (/mg or /model-grade)
+        - scripts/grade.py, CLI backend
+        - scripts/grade.py, API backend
+        - The evals

@@ -1,0 +1,60 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Self-check and installer smoke test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Repository self-check
+        run: python scripts/check_repo.py
+      - name: Build the package
+        run: python scripts/build_package.py --out "$RUNNER_TEMP/pkg/model-grade-install.zip"
+      - name: Install into a fake home
+        run: CLAUDE_HOME="$RUNNER_TEMP/fakehome/.claude" bash install.sh
+      - name: Update from the package into the same fake home
+        run: MODEL_GRADE_HOME="$RUNNER_TEMP/fakehome/.claude" MODEL_GRADE_ZIP="$RUNNER_TEMP/pkg/model-grade-install.zip" bash scripts/update.sh
+      - name: Verify the layout
+        run: |
+          set -e
+          test -f "$RUNNER_TEMP/fakehome/.claude/skills/model-grade/SKILL.md"
+          test -f "$RUNNER_TEMP/fakehome/.claude/skills/mg/SKILL.md"
+          count="$(ls "$RUNNER_TEMP/fakehome/.claude/agents"/mg-run-*.md | wc -l)"
+          test "$count" -ge 6
+          ls -d "$RUNNER_TEMP/fakehome/.claude/skills/"model-grade.bak-* >/dev/null
+          echo "layout ok, $count executors, previous copy backed up"
+
+  windows:
+    name: Installer smoke test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build, install, update, verify
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP "fakehome\.claude"
+          $zip = Join-Path $env:RUNNER_TEMP "pkg\model-grade-install.zip"
+          python scripts/build_package.py --out $zip
+          pwsh -File install.ps1 -Target $target
+          pwsh -File scripts/update.ps1 -Target $target -ZipPath $zip
+          if (-not (Test-Path (Join-Path $target "skills\model-grade\SKILL.md"))) { throw "skill missing" }
+          if (-not (Test-Path (Join-Path $target "skills\mg\SKILL.md"))) { throw "alias missing" }
+          $agents = (Get-ChildItem (Join-Path $target "agents") -Filter "mg-run-*.md").Count
+          if ($agents -lt 6) { throw "expected at least six executors, found $agents" }
+          if (-not (Get-ChildItem (Join-Path $target "skills") -Directory -Filter "model-grade.bak-*")) { throw "previous copy was not backed up" }
+          Write-Host "layout ok, $agents executors, previous copy backed up"

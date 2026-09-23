@@ -69,6 +69,7 @@ def discover() -> dict[str, str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--write", action="store_true", help="update sources.json and the cache")
+    parser.add_argument("--cache-only", action="store_true", help="refresh the cache (so the next run can diff) but leave sources.json alone; used by the scheduled check")
     parser.add_argument("--add", action="append", default=[], help="extra page URL to track")
     parser.add_argument("--no-discover", action="store_true", help="skip llms.txt discovery")
     args = parser.parse_args(argv)
@@ -121,11 +122,9 @@ def main(argv: list[str] | None = None) -> int:
             unchanged += 1
             entry["fetched"] = prior.get("fetched", today)
 
-        if args.write:
+        if args.write or args.cache_only:
             cached.write_bytes(body)
-            pages_out.append(entry)
-        else:
-            pages_out.append(prior or entry)
+        pages_out.append(entry if args.write else (prior or entry))
 
     print(f"model-grade docs refresh, {today}")
     print(f"NEW ({len(new)}):")
