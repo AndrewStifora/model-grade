@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", ".github", "__pycache__", "docs-cache", "dist"}
+SKIP_DIRS = {".git", ".github", "__pycache__", "docs-cache", "docs", "dist"}
 
 
 def build(out: Path, top: str) -> int:
