@@ -23,7 +23,7 @@ New-Item -ItemType Directory -Force -Path $skill | Out-Null
 Get-ChildItem -Path $root -Force | Where-Object { $_.Name -notin @(".git", "__pycache__", "dist") } | ForEach-Object {
     Copy-Item -Path $_.FullName -Destination (Join-Path $skill $_.Name) -Recurse -Force
 }
-Get-ChildItem -Path $skill -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+Get-ChildItem -Path $skill -Recurse -Directory | Where-Object { $_.Name -in @("__pycache__", "docs-cache") } | Remove-Item -Recurse -Force
 
 New-Item -ItemType Directory -Force -Path (Join-Path $skillsDir "mg") | Out-Null
 Copy-Item -Path (Join-Path $root "assets\mg\SKILL.md") -Destination (Join-Path $skillsDir "mg\SKILL.md") -Force

@@ -20,7 +20,7 @@ for entry in "$root"/* "$root"/.[!.]*; do
   case "$(basename "$entry")" in .git|__pycache__|dist) continue ;; esac
   cp -R "$entry" "$skill/"
 done
-find "$skill" -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
+find "$skill" -type d \( -name __pycache__ -o -name docs-cache \) -prune -exec rm -rf {} + 2>/dev/null || true
 
 mkdir -p "$target/skills/mg"
 cp "$root/assets/mg/SKILL.md" "$target/skills/mg/SKILL.md"
