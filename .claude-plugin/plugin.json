@@ -1,7 +1,7 @@
 {
   "name": "model-grade",
   "displayName": "model-grade",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Grade a prompt and pick the cheapest Claude model and effort level that will complete it well, so Opus or Fable is never spent on work Sonnet or Haiku can do. Adds /model-grade, the /mg shorthand, and the mg-run-* executors used by --run.",
   "author": {
     "name": "Andrew Stifora",

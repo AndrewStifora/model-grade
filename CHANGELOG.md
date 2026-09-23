@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 (2026-09-23)
+
+- Installing or updating over an existing copy now moves the old copy to `~/.claude/model-grade-backups/<timestamp>` instead of `~/.claude/skills/model-grade.bak-<timestamp>`, where Claude Code would load it as a second skill. The installers and updaters also move any such leftover folder from 1.2.0 out of `skills/`, and INSTALL.md's steps for Claude say the same.
+- The installers, when run from a clone that already sits at `~/.claude/skills/model-grade` (the git route), no longer move their own folder away; they only place the alias and executors.
+- `update.sh` re-runs itself from a temporary copy when started from the installed folder, because Windows refuses to move a folder that holds an open file.
+- docs: the GitHub social preview can only be set once the repository is public.
+
 ## 1.2.0 (2026-09-23)
 
 - Claude Opus 5.5 added as the tier-2 model (`claude-opus-5-5`, $4 / $20 per million tokens, default effort medium, thinking always on). Opus 5 stays available as the fallback for work that Opus 5.5's biology or dual-use-security classifiers may decline.

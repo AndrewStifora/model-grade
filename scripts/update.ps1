@@ -11,6 +11,9 @@ param(
 $ErrorActionPreference = "Stop"
 if (-not $Repo) { $Repo = "https://github.com/AndrewStifora/model-grade" }
 $skill = Join-Path $Target "skills\model-grade"
+# Previous copies go under $Target\model-grade-backups, never beside the skill, where
+# Claude Code would load them as a second skill.
+$bakRoot = Join-Path $Target "model-grade-backups"
 $before = if (Test-Path (Join-Path $skill "VERSION")) { (Get-Content (Join-Path $skill "VERSION") -Raw).Trim() } else { "unknown" }
 
 if (Test-Path (Join-Path $skill ".git")) {
@@ -34,7 +37,8 @@ if (Test-Path (Join-Path $skill ".git")) {
     $src = Get-ChildItem $tmp -Directory | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") } | Select-Object -First 1
     if (-not $src) { throw "the archive does not contain a SKILL.md at its top level" }
     if (Test-Path $skill) {
-        $bak = "$skill.bak-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        $bak = Join-Path $bakRoot (Get-Date -Format "yyyyMMdd-HHmmss")
+        New-Item -ItemType Directory -Force -Path $bakRoot | Out-Null
         Move-Item -Path $skill -Destination $bak
         Write-Host "previous version moved to $bak"
     }
@@ -46,6 +50,12 @@ if (Test-Path (Join-Path $skill ".git")) {
 # The alias and the executors live outside the skill folder; refresh them from assets.
 $skillsDir = Join-Path $Target "skills"
 $agentsDir = Join-Path $Target "agents"
+# Backups made by 1.2.0 sat beside the skill; move them out of skills\ too.
+Get-ChildItem -Path $skillsDir -Directory -Filter "model-grade.bak-*" | ForEach-Object {
+    New-Item -ItemType Directory -Force -Path $bakRoot | Out-Null
+    Move-Item -Path $_.FullName -Destination (Join-Path $bakRoot $_.Name)
+    Write-Host "leftover $($_.Name) moved to $bakRoot"
+}
 New-Item -ItemType Directory -Force -Path (Join-Path $skillsDir "mg"), $agentsDir | Out-Null
 Copy-Item -Path (Join-Path $skill "assets\mg\SKILL.md") -Destination (Join-Path $skillsDir "mg\SKILL.md") -Force
 Copy-Item -Path (Join-Path $skill "assets\agents\*.md") -Destination $agentsDir -Force

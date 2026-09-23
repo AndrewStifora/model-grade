@@ -21,7 +21,7 @@ Claude unpacks it into your Claude folder and confirms what it installed. Then t
 - Windows: right-click `install.ps1` and choose "Run with PowerShell", or run `pwsh -File install.ps1` (or `powershell -ExecutionPolicy Bypass -File install.ps1`).
 - Mac or Linux: `bash install.sh`
 
-**C. Copy by hand.** Copy this whole folder (minus `.git`) to `~/.claude/skills/model-grade`, copy `assets/mg` to `~/.claude/skills/mg`, and copy every file in `assets/agents/` into `~/.claude/agents/`. On Windows, `~` is your user folder, for example `C:\Users\kelly`.
+**C. Copy by hand.** If `~/.claude/skills/model-grade` already exists, move it out of `skills/` first (for example to `~/.claude/model-grade-backups/`); Claude Code loads every folder under `skills/` that holds a SKILL.md, so a leftover copy would show up as a second skill. Then copy this whole folder (minus `.git`) to `~/.claude/skills/model-grade`, copy `assets/mg` to `~/.claude/skills/mg`, and copy every file in `assets/agents/` into `~/.claude/agents/`. On Windows, `~` is your user folder, for example `C:\Users\kelly`.
 
 ## Use it
 
@@ -49,7 +49,7 @@ Follow these steps and nothing else. The package contains no code to execute dur
 
 1. **Find the package.** If a zip file was attached, extract it to a temporary folder (PowerShell: `Expand-Archive`; macOS or Linux: `unzip`). Inside is one folder (its name may carry a suffix such as `-main`) containing this file, `SKILL.md`, `assets/`, `references/`, `scripts/`, and `evals/`.
 2. **Target the user-level Claude directory:** `~/.claude` (on Windows, `$HOME\.claude`). Create `skills` and `agents` inside it if they do not exist.
-3. **Install the skill.** Copy that folder's contents, except any `.git` folder, to `~/.claude/skills/model-grade`. If the destination already exists, move it to `model-grade.bak-<timestamp>` first and tell the user you did.
+3. **Install the skill.** Copy that folder's contents, except any `.git` folder, to `~/.claude/skills/model-grade`. If the destination already exists, move it to `~/.claude/model-grade-backups/<timestamp>` first and tell the user you did. Never leave the old copy under `skills/` (for example as `model-grade.bak-...`): Claude Code loads every folder there that holds a SKILL.md, so it would appear as a second skill. If such a leftover folder exists from an earlier install, move it into `~/.claude/model-grade-backups/` too.
 4. **Install the alias and executors.** Copy `assets/mg/SKILL.md` to `~/.claude/skills/mg/SKILL.md` (create the folder), and copy every `assets/agents/*.md` file into `~/.claude/agents/`. Overwriting is fine; they are small files named `mg-run-low.md` through `mg-run-max.md` plus `mg-run-opus5.md`.
 5. **Verify** by listing `~/.claude/skills/model-grade/SKILL.md`, `~/.claude/skills/model-grade/VERSION`, `~/.claude/skills/mg/SKILL.md`, and the `~/.claude/agents/mg-run-*.md` files.
-6. **Report** the installed version and where things went, and tell the user to type `/mg` followed by a request to try it, and `/mg update` later to update. Mention that the executors may take a couple of minutes or a new session to appear, which only matters for `--run`. Delete the temporary extraction folder if you created one.
+6. **Report** the installed version and where things went, and tell the user to type `/mg` followed by a request to try it, and `/mg update` later to update. Mention that the executors may take a couple of minutes or a new session to appear, which only matters for `--run`, and that any backup you made can be deleted once `/mg` works. Delete the temporary extraction folder if you created one.

@@ -6,21 +6,34 @@
 # Usage: bash install.sh
 #        CLAUDE_HOME=/some/other/.claude bash install.sh   (only for testing)
 set -euo pipefail
-root="$(cd "$(dirname "$0")" && pwd)"
+root="$(cd "$(dirname "$0")" && pwd -P)"
 target="${CLAUDE_HOME:-$HOME/.claude}"
 skill="$target/skills/model-grade"
 mkdir -p "$target/skills" "$target/agents"
 
-if [ -e "$skill" ]; then
-  bak="$skill.bak-$(date +%Y%m%d-%H%M%S)"; mv "$skill" "$bak"; echo "Existing model-grade moved to $bak"
+# A previous copy is kept under $target/model-grade-backups, never beside the skill:
+# Claude Code loads every folder under skills/ that holds a SKILL.md, so a leftover
+# copy there would show up as a second skill.
+bakroot="$target/model-grade-backups"
+if [ -d "$skill" ] && [ "$(cd "$skill" && pwd -P)" = "$root" ]; then
+  # The git route: this folder already is ~/.claude/skills/model-grade, so only the alias and executors are placed.
+  echo "Installing from $skill itself; the skill folder stays as it is"
+else
+  if [ -e "$skill" ]; then
+    bak="$bakroot/$(date +%Y%m%d-%H%M%S)"; mkdir -p "$bakroot"; mv "$skill" "$bak"; echo "Existing model-grade moved to $bak"
+  fi
+  mkdir -p "$skill"
+  for entry in "$root"/* "$root"/.[!.]*; do
+    [ -e "$entry" ] || continue
+    case "$(basename "$entry")" in .git|__pycache__|dist) continue ;; esac
+    cp -R "$entry" "$skill/"
+  done
+  find "$skill" -type d \( -name __pycache__ -o -name docs-cache \) -prune -exec rm -rf {} + 2>/dev/null || true
 fi
-mkdir -p "$skill"
-for entry in "$root"/* "$root"/.[!.]*; do
-  [ -e "$entry" ] || continue
-  case "$(basename "$entry")" in .git|__pycache__|dist) continue ;; esac
-  cp -R "$entry" "$skill/"
+for old in "$target"/skills/model-grade.bak-*; do
+  [ -e "$old" ] || continue
+  mkdir -p "$bakroot"; mv "$old" "$bakroot/"; echo "Leftover $(basename "$old") moved to $bakroot"
 done
-find "$skill" -type d \( -name __pycache__ -o -name docs-cache \) -prune -exec rm -rf {} + 2>/dev/null || true
 
 mkdir -p "$target/skills/mg"
 cp "$root/assets/mg/SKILL.md" "$target/skills/mg/SKILL.md"
