@@ -94,7 +94,7 @@ Take `complexity = max(scope, horizon, ambiguity, reasoning)`. Use the max, not 
 
 **Adjustments, applied in this order:**
 
-1. **Step down one tier** when verification is `checker`, cost_of_error is `trivial` or `reversible`, and a re-run is cheap. Anthropic's runs: everything at low, failures re-run at the default, reached about 93% pass at about half the cost of running everything at the default. The verdict is then the cheap first attempt; name the tier you stepped down from in `escalate_if` as the re-run target. Never step below a hard-constraint floor.
+1. **Step down one tier** when verification is `checker`, cost_of_error is `trivial` or `reversible`, and a re-run is cheap. Anthropic's runs: everything at low, failures re-run at the default, reached about 93% pass at about half the cost of running everything at the default. The verdict is then the cheap first attempt; name the tier you stepped down from in `escalate_if` as the re-run target. Never step below a hard-constraint floor. The step-down needs a usable failure signal: a checker that is itself flaky or intermittent (a test that fails one run in twenty proves nothing when it passes once), one that takes so long that a re-run is not cheap, or one that cannot observe the failure mode at all does not qualify, and neither does a prompt whose latent-difficulty markers pushed it up in the first place.
 2. **Step up one tier** when cost_of_error is `costly` and verification is `none` or `self-check`. Nobody will catch the mistake, so pay for fewer mistakes.
 3. **Step up one tier** when two or more latent-difficulty markers are present and the tier came out at 0 or 1.
 4. **Do not step down** just because the prompt is short. Prompt length is not task difficulty.
