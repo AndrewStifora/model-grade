@@ -1,0 +1,204 @@
+{
+  "skill_name": "model-grade",
+  "notes": "Each eval labels the cheapest (model, effort) pair the rubric should produce. `models` is the expected model; `within_one_tier` marks whether an adjacent tier also passes the lenient assertion; `effort_ok` lists acceptable effort values (null for Haiku); `forbid_models` are hard-constraint failures.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "tickets-classify",
+      "prompt": "ok I've got support_tickets_sept.csv (~300 rows, columns id, subject, body). label each one as billing / bug / feature / other and write labels.csv with id,label. our support lead will skim the result before we act on it",
+      "expected_output": "Haiku 4.5, effort null. Mechanical classification with a schema and a human skim; high volume.",
+      "expected": {"models": ["claude-haiku-4-5"], "effort_ok": [null, "low"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "uppercase-cities",
+      "prompt": "convert the 80 city names in cities.txt to uppercase, one per line, and save the result as cities_upper.txt",
+      "expected_output": "Haiku 4.5, effort null. Trivial transform.",
+      "expected": {"models": ["claude-haiku-4-5"], "effort_ok": [null, "low"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "extract-contacts",
+      "prompt": "here are 40 email signatures I pasted into signatures.txt. pull out name, email and company for each into contacts.json as a list of objects. some signatures are messy (multiple phone numbers, job titles on the same line as the name)",
+      "expected_output": "Haiku 4.5 (effort null) or Sonnet 5 at low. Extraction into a checkable schema, but the messiness needs minor judgment and nobody checks the output, so either tier-0 or tier-1 is defensible; anything above is over-commitment.",
+      "expected": {"models": ["claude-haiku-4-5", "claude-sonnet-5"], "effort_ok": [null, "low"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "dry-run-flag",
+      "prompt": "add a --dry-run flag to scripts/cleanup.py that prints what would be deleted without deleting anything. follow the existing argparse pattern in that file. then run pytest tests/test_cleanup.py and make sure it's green",
+      "expected_output": "Sonnet 5 at low or medium. Bounded single-file change with a test checker.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["low", "medium"], "forbid_models": ["claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "revenue-script",
+      "prompt": "write a python script that reads orders.csv (columns order_id, date, amount, currency) and prints total revenue per month converted to USD using the rates in rates.json. keep it to one file, stdlib only",
+      "expected_output": "Sonnet 5 at low or medium. Small well-specified script.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["low", "medium"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "offsite-transcript-summary",
+      "prompt": "offsite_transcript.md is the 40-page transcript of our leadership offsite last week. give me the decisions made, who owns each one, deadlines mentioned, and a list of open questions nobody answered",
+      "expected_output": "Sonnet 5 at medium (high acceptable). Unverified summary with some judgment; not Haiku because nobody checks it.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "date-parse-tests",
+      "prompt": "write unit tests for utils/date_parse.py covering the edge cases listed in its docstring (empty string, timezone offsets, leap day, two-digit years). use pytest like the rest of tests/ and run them",
+      "expected_output": "Sonnet 5 at low or medium. Scoped, verifiable.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["low", "medium"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "rename-across-src",
+      "prompt": "rename getUserData to fetchUserProfile everywhere in src/ (about 30 files) and fix the imports and the two places it's referenced in docs/. npm test needs to stay green",
+      "expected_output": "Sonnet 5 at low or medium. Mechanical multi-file change with a checker.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["low", "medium"], "forbid_models": ["claude-fable-5-1"]},
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "notifications-feature",
+      "prompt": "implement docs/spec-notifications.md end to end: a postgres migration for the notifications table, the service layer in src/services/notifications.ts, REST endpoints in src/api/notifications.ts, and update the React inbox component in web/src/Inbox.tsx to show unread counts. the tests in tests/ must pass when you're done",
+      "expected_output": "Opus 5.5 at medium (low or high acceptable; Fable acceptable). Multi-file feature, long-horizon coding, checker exists; Opus 5.5 at medium matches Opus 5 at high in fewer tokens.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["low", "medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5", "claude-opus-5"]},
+      "files": []
+    },
+    {
+      "id": 10,
+      "name": "auth-pr-review",
+      "prompt": "review PR #482 (the diff is in pr-482.diff, about 1200 lines, it touches session handling and the password reset flow) for bugs and security issues. report everything you find, even low severity, with a confidence for each",
+      "expected_output": "Opus 5.5 at low or medium. Finding vulnerabilities in source code is explicitly allowed on Opus 5.5; Fable excluded by the classifier constraint; review accuracy holds at lower effort.",
+      "expected": {"models": ["claude-opus-5-5"], "effort_ok": ["low", "medium", "high"], "forbid_models": ["claude-fable-5-1", "claude-haiku-4-5"]},
+      "files": []
+    },
+    {
+      "id": 11,
+      "name": "grafana-screenshot",
+      "prompt": "attached: grafana_incident.png, our dashboard during yesterday's outage (12 panels, small text). which service caused the p99 latency spike at 14:32 and why do you think so?",
+      "expected_output": "Opus 5.5 at low or medium (high acceptable; Fable acceptable). Dense-image floor excludes Haiku and Sonnet; Opus 5.5 reads dense charts at low better than Opus 5 at max.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["low", "medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5"]},
+      "files": []
+    },
+    {
+      "id": 12,
+      "name": "three-statement-model",
+      "prompt": "build a 3-statement financial model in Excel from assumptions.md: monthly for 3 years, income statement, balance sheet and cash flow on separate sheets with linked formulas, plus a summary sheet with charts. our CFO will review it before the board meeting",
+      "expected_output": "Opus 5.5 at medium or high (Fable acceptable). Office deliverable with non-trivial formulas; Opus 5.5 is documented as better at financial modeling.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5"]},
+      "files": []
+    },
+    {
+      "id": 13,
+      "name": "contracts-long-context",
+      "prompt": "I've dumped all 180 vendor contracts into contracts/ (roughly 600K tokens in total). find every clause that conflicts with our new data retention policy in policy.md and list them with contract name, clause number and the conflicting sentence",
+      "expected_output": "Opus 5 or Fable 5.1 at medium or high. Context over 200K excludes Haiku. Opus is the documented long-context value pick; Fable is defensible only through the costly-and-unverified step-up, not through the research exception (600K input tokens at twice the rate dominate the bill).",
+      "expected": {"models": ["claude-opus-5-5", "claude-fable-5-1"], "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5"]},
+      "files": []
+    },
+    {
+      "id": 14,
+      "name": "scheduler-deadlock",
+      "prompt": "our job scheduler (repo in ./scheduler) has a rare deadlock we've been chasing for weeks, maybe 1 in 500 runs. three stack dumps are in dumps/. find the root cause and fix it with a regression test that actually reproduces it",
+      "expected_output": "Fable 5.1 at high (xhigh acceptable; Opus at xhigh acceptable). Complexity 3 with latent-difficulty markers.",
+      "expected": {"models": ["claude-fable-5-1"], "within_one_tier": true, "effort_ok": ["high", "xhigh"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5"]},
+      "files": []
+    },
+    {
+      "id": 15,
+      "name": "mvp-autonomous",
+      "prompt": "brief.md is the product brief. build the whole MVP end to end: postgres schema, fastapi backend, react frontend, tests, and a deploy script for fly.io. ask me any clarifying questions first, then run autonomously for as long as it takes",
+      "expected_output": "Fable 5.1 at high (Opus acceptable). Whole-system, hours-long autonomous run, ambiguity.",
+      "expected": {"models": ["claude-fable-5-1"], "within_one_tier": true, "effort_ok": ["high", "xhigh"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5"]},
+      "files": []
+    },
+    {
+      "id": 16,
+      "name": "vectordb-research-memo",
+      "prompt": "research and compare Pinecone, Weaviate, Qdrant, Milvus, pgvector and Chroma on 12 criteria (pricing, metadata filtering, hybrid search, multi-tenancy, managed vs self-hosted, SDK maturity, ...) with sources for every claim, and write a decision memo for our platform team",
+      "expected_output": "Fable 5.1 at low or medium (Opus at medium acceptable). Research and synthesis: flat effort curve, Fable at low documented to win on cost per task; long deliverable so not xhigh/max.",
+      "expected": {"models": ["claude-fable-5-1"], "within_one_tier": true, "effort_ok": ["low", "medium"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5"]},
+      "files": []
+    },
+    {
+      "id": 17,
+      "name": "flaky-concurrent-test",
+      "prompt": "tests/test_sync.py::test_concurrent_upload fails about 1 in 20 runs on CI and always passes locally. fix it",
+      "expected_output": "Opus 5.5 at medium or high (Sonnet at high/xhigh or Fable acceptable). Short prompt with latent-difficulty markers: intermittent failure, passes locally.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["medium", "high", "xhigh"], "forbid_models": ["claude-haiku-4-5"]},
+      "files": []
+    },
+    {
+      "id": 18,
+      "name": "fuzz-harness-triage",
+      "prompt": "write a libFuzzer harness for our image parser (src/img/decode.c) and triage whatever crashes it finds in the first hour: dedupe by stack, rank by likely exploitability, and propose fixes",
+      "expected_output": "Opus 5.5 or Opus 5 at high or xhigh. Dual-use security shape: Fable excluded by the classifier constraint; Opus 5.5 may decline the triage half, Opus 5 is the documented fallback.",
+      "expected": {"models": ["claude-opus-5-5", "claude-opus-5"], "effort_ok": ["high", "xhigh"], "forbid_models": ["claude-fable-5-1", "claude-haiku-4-5"]},
+      "files": []
+    },
+    {
+      "id": 19,
+      "name": "skill-driven-deck",
+      "prompt": "use the slide-design skill to turn docs/q3-review.md into a 12-slide deck (pptx) for the leadership meeting on thursday. one message per slide, keep the numbers from the doc",
+      "context": "Session has the slide-design skill available. Its description: creates cognitively optimized slides and decks using five design principles; it prescribes an outline step, a build step with bundled scripts, and a render-and-check pass.",
+      "expected_output": "Sonnet 5 at high (Opus at medium acceptable). A skill with bundled scripts does the mechanical work; what remains is per-slide judgment. Not Haiku, not Fable (rule-heavy skill, over-commitment).",
+      "expected": {"models": ["claude-sonnet-5", "claude-opus-5-5"], "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-fable-5-1", "claude-opus-5"], "dependencies": ["skill"]},
+      "files": []
+    },
+    {
+      "id": 20,
+      "name": "three-connector-workflow",
+      "prompt": "read the unread emails in my Gmail under the Clients label, create a Trello card on the Follow-ups board for each one that asks me a question, then post a one-line summary of the new cards in Slack #client-ops",
+      "context": "Session has Gmail, Trello, and Slack MCP connectors available as deferred tools (the executor must load their schemas with a tool search first).",
+      "expected_output": "Opus 5 at medium or Sonnet 5 at high. Three connectors with writes visible to others: effort floor medium, horizon capped at 2 (plumbing), confirm-before-write instead of a bigger model. Not Haiku (multi-tool orchestration), not Fable.",
+      "expected": {"models": ["claude-opus-5-5", "claude-sonnet-5"], "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-fable-5-1", "claude-opus-5"], "dependencies": ["tools"]},
+      "files": []
+    },
+    {
+      "id": 21,
+      "name": "short-fix-large-repo",
+      "prompt": "fix the bug where the invoice total is off by exactly the tax amount on refunds",
+      "context": "Working directory is a monorepo of about 2,400 source files. No knowledge graph or architecture doc exists. The test suite exists but takes about 40 minutes to run.",
+      "expected_output": "Opus 5 at medium or high (Sonnet at high/xhigh acceptable). Two-line prompt against a large unfamiliar repo is a latent marker; refund tax logic needs reasoning; the checker is slow so no step-down.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-opus-5"], "dependencies": ["project"]},
+      "files": []
+    },
+    {
+      "id": 22,
+      "name": "skill-with-scripts",
+      "prompt": "use the graphify skill to build the knowledge graph for ./services/billing and then tell me which modules call the payment gateway client",
+      "context": "Session has the graphify skill available. Its description: turns a folder of code into a persistent knowledge graph with bundled build and query scripts; building and querying are deterministic script runs.",
+      "expected_output": "Sonnet 5 at low or medium. The skill's scripts do the heavy lifting; the remaining work is running them and reading one query result. Opus or Fable would be over-commitment.",
+      "expected": {"models": ["claude-sonnet-5"], "effort_ok": ["low", "medium"], "forbid_models": ["claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"], "dependencies": ["skill"]},
+      "files": []
+    },
+    {
+      "id": 23,
+      "name": "session-follow-up",
+      "prompt": "now do the same for the other three endpoints we discussed",
+      "context": "This is a follow-up turn in an ongoing session; the earlier turns are not available to the grader.",
+      "expected_output": "Verdict is provisional; the key output is detecting the session dependency and recommending in-session execution on the session's model. Sonnet or Opus at low to high all acceptable; not Haiku, not Fable.",
+      "expected": {"models": ["claude-sonnet-5", "claude-opus-5-5"], "effort_ok": ["low", "medium", "high"], "forbid_models": ["claude-haiku-4-5", "claude-fable-5-1", "claude-opus-5"], "dependencies": ["session"]},
+      "files": []
+    },
+    {
+      "id": 24,
+      "name": "multi-hour-migration",
+      "prompt": "migrate our 300-module python 2 code base (repo in ./legacy) to python 3 over the next few hours using parallel subagents, module by module, and keep the test suite green throughout. commit after each module",
+      "context": "The repo has about 300 modules and a test suite that runs in about 6 minutes. This is a mechanical migration with well-known patterns, not an unsolved problem.",
+      "expected_output": "Opus 5.5 at high (medium acceptable; Fable acceptable within one tier). The Opus 5.5 docs name multi-hour migrations with parallel subagents as its territory; Fable is for multiday or unsolved work.",
+      "expected": {"models": ["claude-opus-5-5"], "within_one_tier": true, "effort_ok": ["medium", "high", "xhigh"], "forbid_models": ["claude-haiku-4-5", "claude-sonnet-5", "claude-opus-5"], "dependencies": ["project"]},
+      "files": []
+    }
+  ]
+}
