@@ -13,4 +13,4 @@ python docs/social-preview.py --hero docs/hero-gauge.png  --out docs/social-prev
 python docs/social-preview.py --hero docs/hero-blocks.png --out docs/social-preview.png
 ```
 
-GitHub has no API for the social preview, so after changing the file upload it by hand: repository Settings, General, Social preview, Upload an image. The Social preview section exists only on public repositories; a private repository has no such setting, so the upload waits until the repository is public.
+GitHub has no API for the social preview, so after changing the file upload it by hand: repository Settings, General, Social preview, Upload an image. The setting exists only on public repositories.

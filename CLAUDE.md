@@ -23,7 +23,8 @@ Eval results land outside the repo in `../model-grade-workspace/iteration-N/` (s
 - `SKILL.md` runs on Sonnet 5 at medium effort (its frontmatter) and is loaded whole on every invocation. Keep it short; put reasoning in `references/`.
 - `references/docs-cache/` is generated and git-ignored. Never commit it, never edit it.
 - The `mg` alias lives at `assets/mg/SKILL.md` and the executors at `assets/agents/`; installers and `update` copy them out. Edit them here, not in `~/.claude`.
-- For a new model, follow `references/UPDATING.md` in order. Then bump `VERSION`, add a `CHANGELOG.md` section, and tag `vX.Y.Z` to release.
+- For a new model, follow `references/UPDATING.md` in order. Bump `VERSION` (and `.claude-plugin/plugin.json`) and add a `CHANGELOG.md` section in the same pull request; after it merges, tag `vX.Y.Z` on `main` and push the tag to release.
+- This folder is also the live installed skill (`~/.claude/skills/model-grade`), so the checked-out branch is what `/mg` runs. Return to `main` and pull after each merge; parallel work goes in a worktree outside `~/.claude/skills`.
 
 ## Things to avoid
 

@@ -39,7 +39,7 @@ Follow `references/UPDATING.md`. It lists the files in the order that keeps the 
 
 ## Housekeeping
 
-- Bump `VERSION` and add a `CHANGELOG.md` section for anything users would notice. Pushing a `vX.Y.Z` tag publishes a release.
+- Bump `VERSION` and add a `CHANGELOG.md` section for anything users would notice, in the same pull request. After it merges, the maintainer tags `main` with `vX.Y.Z`; pushing the tag publishes a release.
 - `references/docs-cache/` is generated and git-ignored; never commit it. `references/sources.json` is committed and holds only hashes.
 - Keep `SKILL.md` lean. It runs on Sonnet 5 at medium effort, and every line is loaded on every invocation.
 - Commit messages: a short imperative summary; mention the eval numbers when the rubric changed.

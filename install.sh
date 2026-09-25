@@ -25,7 +25,7 @@ else
   mkdir -p "$skill"
   for entry in "$root"/* "$root"/.[!.]*; do
     [ -e "$entry" ] || continue
-    case "$(basename "$entry")" in .git|__pycache__|dist) continue ;; esac
+    case "$(basename "$entry")" in .git|.githooks|.claude|__pycache__|dist) continue ;; esac
     cp -R "$entry" "$skill/"
   done
   find "$skill" -type d \( -name __pycache__ -o -name docs-cache \) -prune -exec rm -rf {} + 2>/dev/null || true
