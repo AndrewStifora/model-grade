@@ -3,3 +3,6 @@ __pycache__/
 references/docs-cache/
 dist/
 *.bak-*
+
+# Claude desktop app session worktrees
+.claude/worktrees/

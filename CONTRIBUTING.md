@@ -43,3 +43,17 @@ Follow `references/UPDATING.md`. It lists the files in the order that keeps the 
 - `references/docs-cache/` is generated and git-ignored; never commit it. `references/sources.json` is committed and holds only hashes.
 - Keep `SKILL.md` lean. It runs on Sonnet 5 at medium effort, and every line is loaded on every invocation.
 - Commit messages: a short imperative summary; mention the eval numbers when the rubric changed.
+
+<!-- workflow-kit:start -->
+## Workflow
+
+Every change goes through a pull request, even a small one. The owner reviews and merges.
+
+1. Open an issue for the change, or pick an existing one.
+2. Branch from an up-to-date `main` with a prefix and the issue number: `feat/`, `fix/`, `docs/` or `chore/`, for example `fix/12-installer-backup-path`.
+3. Commit in small, readable steps.
+4. Push and open a pull request against `main`; the template carries the checklist. End the description with `Closes #<issue>`.
+5. Once CI is green and the owner approves, the pull request is squash-merged and the branch deleted. `main` keeps one commit per pull request.
+
+Enable the local hooks once per clone with `git config core.hooksPath .githooks`: they block direct pushes to `main` and scan each commit for secrets.
+<!-- workflow-kit:end -->

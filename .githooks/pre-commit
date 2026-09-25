@@ -1,0 +1,11 @@
+#!/bin/sh
+# Workflow kit: scan the staged files for secrets before every commit.
+# Enable once per clone: git config core.hooksPath .githooks
+root="$(git rev-parse --show-toplevel)"
+for py in python3 python py; do
+  if command -v "$py" >/dev/null 2>&1 && "$py" -c "import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)" >/dev/null 2>&1; then
+    exec "$py" "$root/.githooks/scan_secrets.py" --staged
+  fi
+done
+echo "pre-commit: Python 3.8+ not found, secret scan skipped" >&2
+exit 0

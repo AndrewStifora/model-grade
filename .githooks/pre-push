@@ -1,0 +1,16 @@
+#!/bin/sh
+# Workflow kit: every change reaches main through a pull request, so direct pushes to
+# main (or master) are refused here. Enable once per clone:
+#   git config core.hooksPath .githooks
+# Emergency override, for the owner only: git push --no-verify
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master)
+      branch="${remote_ref#refs/heads/}"
+      echo "pre-push: direct pushes to $branch are blocked. Push a branch and open a pull request:" >&2
+      echo "  git switch -c <type>/<issue>-<slug>; git push -u origin HEAD; gh pr create" >&2
+      exit 1
+      ;;
+  esac
+done
+exit 0
