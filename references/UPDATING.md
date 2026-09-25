@@ -39,7 +39,7 @@ python scripts/refresh_docs.py --write
 python evals/run_evals.py --workers 3
 ```
 
-The with-rubric pass rate should stay at or near 100% and the no-rubric baseline should stay clearly below it; read any eval that moved. Then commit, tag the version (`git tag v1.2.0`), push, and tell users to run `/mg update`.
+The with-rubric pass rate should stay at or near 100% and the no-rubric baseline should stay clearly below it; read any eval that moved. Then open a pull request for the change (issue first, branch `feat/<issue>-<model>`). Once CI is green and it is merged, tag `main` with the version and push the tag: `git switch main`, `git pull`, `git tag v1.2.0`, `git push origin v1.2.0`. The release workflow publishes the zip; tell users to run `/mg update`.
 
 ## What changes rarely
 

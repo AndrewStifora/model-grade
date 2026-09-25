@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.2 (2026-09-25)
+
+- The repository is public, and every change now goes issue, branch, pull request, green CI, squash merge. `main` is protected by a ruleset, and local hooks in `.githooks/` block direct pushes and scan commits for secrets. Enable them in a clone with `git config core.hooksPath .githooks`.
+- The install zip and the installers leave out `.githooks/` and `.claude/` (Claude desktop app session worktrees), so neither lands in an installed skill.
+- docs: releases are tagged on `main` after the pull request merges (CLAUDE.md, CONTRIBUTING.md, `references/UPDATING.md`); the pull request template links its issue.
+
 ## 1.2.1 (2026-09-23)
 
 - Installing or updating over an existing copy now moves the old copy to `~/.claude/model-grade-backups/<timestamp>` instead of `~/.claude/skills/model-grade.bak-<timestamp>`, where Claude Code would load it as a second skill. The installers and updaters also move any such leftover folder from 1.2.0 out of `skills/`, and INSTALL.md's steps for Claude say the same.

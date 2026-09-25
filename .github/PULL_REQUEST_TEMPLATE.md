@@ -2,6 +2,8 @@
 
 <!-- One or two sentences. If it changes a verdict, say which prompts move and why. -->
 
+Closes #
+
 ## Checklist
 
 - [ ] `python scripts/check_repo.py` passes

@@ -30,7 +30,7 @@ if ($inPlace) {
         Write-Host "Existing model-grade moved to $bak"
     }
     New-Item -ItemType Directory -Force -Path $skill | Out-Null
-    Get-ChildItem -Path $root -Force | Where-Object { $_.Name -notin @(".git", "__pycache__", "dist") } | ForEach-Object {
+    Get-ChildItem -Path $root -Force | Where-Object { $_.Name -notin @(".git", ".githooks", ".claude", "__pycache__", "dist") } | ForEach-Object {
         Copy-Item -Path $_.FullName -Destination (Join-Path $skill $_.Name) -Recurse -Force
     }
     Get-ChildItem -Path $skill -Recurse -Directory | Where-Object { $_.Name -in @("__pycache__", "docs-cache") } | Remove-Item -Recurse -Force
