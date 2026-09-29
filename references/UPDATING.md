@@ -31,6 +31,7 @@ Ask, in this order:
 5. `assets/agents/`: add a pinned executor only if the Claude Code alias does not resolve to the model yet (check with `claude -p "OK" --model <alias> --output-format json` and read `modelUsage`).
 6. `evals/evals.json`: update `models` and `effort_ok` for the affected tier; add one eval for anything the docs say the model is newly good at.
 7. `SKILL.md` description and `README.md` model list, `references/sources.md`, `CHANGELOG.md`, `VERSION`.
+8. `CLAUDE_CODE_VERSION`: when a Claude Code release moves an alias the rubric routes to (its changelog says so, as 2.1.280 did for `opus` and 2.1.284 for `sonnet`), set it to that version. `update` and `version` compare it with `claude --version` and recommend `claude update` to anyone older.
 
 ## 5. Verify and publish
 

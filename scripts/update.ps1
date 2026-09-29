@@ -68,3 +68,10 @@ if (Test-Path (Join-Path $skill "CHANGELOG.md")) {
     Write-Host ""
     Get-Content (Join-Path $skill "CHANGELOG.md") -TotalCount 25
 }
+
+# Last, so it is the line the user sees: is the Claude Code CLI as new as this release expects?
+$check = Join-Path $skill "scripts\check_claude_code.ps1"
+if (Test-Path $check) {
+    Write-Host ""
+    & $check -Skill $skill
+}

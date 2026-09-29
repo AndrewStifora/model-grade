@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 (2026-09-29)
+
+- `/mg update` now ends by checking the Claude Code CLI: it compares `claude --version` with `CLAUDE_CODE_VERSION` (2.1.284, the first release where both the `sonnet` and `opus` aliases reach Sonnet 5.5 and Opus 5.5) and recommends `claude update` when the CLI is older, because an older CLI can send a `--run` to a different model than the verdict names. A missing CLI or an unreadable version only skips the check; it never fails the update. `/mg version` runs the same check.
+- The check lives in `scripts/check_claude_code.ps1` and `scripts/check_claude_code.sh`, which also run on their own. The update that installs 1.4.0 is carried out by the previous release's script, so the check first appears on the next update; run `/mg version` to see it now.
+- `check_repo.py` validates `CLAUDE_CODE_VERSION`; `validate` covers an older, a current, and a missing CLI on Linux and Windows; `references/UPDATING.md` says when to bump it.
+
 ## 1.3.0 (2026-09-28)
 
 - Claude Sonnet 5.5 added as the tier-1 model (`claude-sonnet-5-5`, $2 / $10 per million tokens, the same as Sonnet 5; default effort high; recalibrated effort levels). Sonnet 5, now legacy, stays available as the fallback for work that Sonnet 5.5's `cyber`, `bio`, `frontier_llm`, or `general_harms` classifiers may decline, and for integrations that force `tool_choice`, send `thinking: disabled`, or use `computer_20251124`. Server-side fallback already retries `cyber` and `frontier_llm` declines on Sonnet 5.
