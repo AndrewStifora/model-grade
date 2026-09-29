@@ -69,6 +69,7 @@ Anthropic ships models faster than anyone re-reads docs, so the repository watch
 - The `docs-check` workflow runs that script every Monday and opens (or updates) an issue when something changed.
 - `references/UPDATING.md` is the checklist for turning a new model page into rubric, schema, grader, and eval changes, in the order that keeps them consistent.
 - Bump `VERSION`, add a `CHANGELOG.md` section, push a `vX.Y.Z` tag, and the `release` workflow publishes the zip. Everyone else runs `/mg update`.
+- `CLAUDE_CODE_VERSION` names the Claude Code release the skill is built for, the one where the `sonnet` and `opus` aliases reach the models the rubric routes to. `/mg update` and `/mg version` compare it with `claude --version` and recommend `claude update` when the CLI is older.
 
 ## The grader as a script
 

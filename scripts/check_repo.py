@@ -113,6 +113,13 @@ version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 check(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None, f"VERSION {version!r} is not MAJOR.MINOR.PATCH")
 check(f"## {version} " in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"), f"CHANGELOG.md has no section for {version}")
 
+# 7. The Claude Code version the release is built for, which update compares with `claude --version`.
+cc_file = ROOT / "CLAUDE_CODE_VERSION"
+cc_version = cc_file.read_text(encoding="utf-8").strip() if cc_file.exists() else ""
+check(re.fullmatch(r"\d+\.\d+\.\d+", cc_version) is not None, f"CLAUDE_CODE_VERSION {cc_version!r} is missing or not MAJOR.MINOR.PATCH")
+for name in ("check_claude_code.ps1", "check_claude_code.sh"):
+    check((ROOT / "scripts" / name).exists(), f"scripts/{name} is missing")
+
 if errors:
     print("FAIL")
     for message in errors:

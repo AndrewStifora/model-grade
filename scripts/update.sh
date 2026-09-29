@@ -67,4 +67,10 @@ after="$(tr -d '[:space:]' < "$skill/VERSION")"
 echo
 echo "model-grade $before -> $after   ($skill)"
 echo "alias /mg and executors mg-run-* refreshed in $target/skills/mg and $target/agents"
-[ -f "$skill/CHANGELOG.md" ] && { echo; head -25 "$skill/CHANGELOG.md"; }
+if [ -f "$skill/CHANGELOG.md" ]; then echo; head -25 "$skill/CHANGELOG.md"; fi
+
+# Last, so it is the line the user sees: is the Claude Code CLI as new as this release expects?
+if [ -f "$skill/scripts/check_claude_code.sh" ]; then
+  echo
+  bash "$skill/scripts/check_claude_code.sh" "$skill" || true
+fi
