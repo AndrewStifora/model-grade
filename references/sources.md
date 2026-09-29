@@ -2,9 +2,9 @@
 
 Every routing fact in `model-profiles.md` and `rubric.md` comes from the pages below. `sources.json` is the machine-readable manifest with a SHA-256 hash and fetch date per page; `scripts/refresh_docs.py` keeps it current and discovers new pages from https://platform.claude.com/llms.txt. Each page serves raw Markdown at its URL with `.md` appended. The pages themselves are cached locally in `docs-cache/` (git-ignored, they are Anthropic's text); the repository stores only the hashes.
 
-Last full refresh: 2026-09-23.
+Last full refresh: 2026-09-28.
 
-## Anthropic prompt-engineering category (eight pages)
+## Anthropic prompt-engineering category (nine pages)
 
 | Page | URL |
 |---|---|
@@ -15,12 +15,16 @@ Last full refresh: 2026-09-23.
 | Prompting Claude Opus 5.5 (added 2026-09-23) | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5 |
 | Prompting Claude Opus 5 | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5 |
 | Prompting Claude Opus 4.8 | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-4-8 |
+| Prompting Claude Sonnet 5.5 (added 2026-09-28) | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5 |
 | Prompting Claude Sonnet 5 | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5 |
 
 ## Model pages (IDs, prices, limits, breaking changes)
 
 | Page | URL |
 |---|---|
+| Claude Sonnet 5.5 overview (added 2026-09-28) | https://platform.claude.com/docs/en/models/sonnet-5-5/overview |
+| What's new in Claude Sonnet 5.5 (added 2026-09-28) | https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5 |
+| Claude Sonnet 5 overview (now legacy) | https://platform.claude.com/docs/en/models/sonnet-5/overview |
 | Claude Opus 5.5 overview | https://platform.claude.com/docs/en/models/opus-5-5/overview |
 | What's new in Claude Opus 5.5 | https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5 |
 | Effort (recommended levels per model) | https://platform.claude.com/docs/en/build-with-claude/effort |

@@ -283,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--configs", default="with_skill,without_skill")
     parser.add_argument("--runs", type=int, default=1, help="runs per configuration")
     parser.add_argument("--backend", choices=["auto", "api", "cli"], default="cli")
-    parser.add_argument("--grader-model", default="sonnet")
+    parser.add_argument("--grader-model", default=grader.GRADER_MODEL)
     parser.add_argument("--effort", default="medium", choices=grader.EFFORTS)
     parser.add_argument("--workers", type=int, default=3)
     parser.add_argument("--timeout", type=int, default=600, help="seconds per grade")

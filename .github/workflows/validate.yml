@@ -48,7 +48,7 @@ jobs:
           test -f "$home/skills/model-grade/SKILL.md"
           test -f "$home/skills/mg/SKILL.md"
           count="$(ls "$home/agents"/mg-run-*.md | wc -l)"
-          test "$count" -ge 6
+          test "$count" -ge 7
           dirs="$(ls -1 "$home/skills" | sort | paste -sd, -)"
           test "$dirs" = "mg,model-grade" || { echo "skills/ holds [$dirs]"; exit 1; }
           test -d "$home/model-grade-backups/model-grade.bak-20260101-000000"
@@ -92,7 +92,7 @@ jobs:
           if (-not (Test-Path "$target\skills\model-grade\SKILL.md")) { throw "skill missing" }
           if (-not (Test-Path "$target\skills\mg\SKILL.md")) { throw "alias missing" }
           $agents = (Get-ChildItem "$target\agents" -Filter "mg-run-*.md").Count
-          if ($agents -lt 6) { throw "expected at least six executors, found $agents" }
+          if ($agents -lt 7) { throw "expected at least seven executors, found $agents" }
           $dirs = (Get-ChildItem "$target\skills" -Directory | Select-Object -ExpandProperty Name | Sort-Object) -join ","
           if ($dirs -ne "mg,model-grade") { throw "skills/ holds [$dirs]" }
           $baks = Get-ChildItem "$target\model-grade-backups" -Directory | Select-Object -ExpandProperty Name

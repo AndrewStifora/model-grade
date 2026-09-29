@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """model-grade: pick the cheapest Claude model and effort level for a prompt.
 
-The grader is Claude Sonnet 5 at medium effort (override with --grader-model /
---effort). It reads the rubric and model profiles from ../references, grades the
+The grader is Claude Sonnet 5 at medium effort, pinned by model ID so a Claude
+Code alias move cannot change it (override with --grader-model / --effort; the
+evals were calibrated on this grader). It reads the rubric and model profiles from ../references, grades the
 prompt, and returns a verdict that validates against verdict_schema.json.
 
 Backends
@@ -43,22 +44,31 @@ SKILL_DIR = HERE.parent
 REFS = SKILL_DIR / "references"
 SCHEMA_PATH = HERE / "verdict_schema.json"
 
+GRADER_MODEL = "claude-sonnet-5"
+
+# Each alias maps to its tier's current model. The Claude Code `sonnet` alias resolves
+# to Sonnet 5.5 from v2.1.284 (Sonnet 5 before), so the grader and fallback are pinned by ID.
 ALIAS_TO_ID = {
     "haiku": "claude-haiku-4-5",
-    "sonnet": "claude-sonnet-5",
+    "sonnet": "claude-sonnet-5-5",
     "opus": "claude-opus-5-5",  # the Claude Code alias resolves to Opus 5.5 from v2.1.280
     "fable": "claude-fable-5-1",
 }
 ID_TO_ALIAS = {
     "claude-haiku-4-5": "haiku",
-    "claude-sonnet-5": "sonnet",
+    "claude-sonnet-5-5": "sonnet",
+    "claude-sonnet-5": "sonnet",  # fallback model in the Sonnet tier; pin by ID where the alias must not move
     "claude-opus-5-5": "opus",
     "claude-opus-5": "opus",  # fallback model in the Opus tier; pin by ID where the alias must not move
     "claude-fable-5-1": "fable",
 }
-TIER = {"claude-haiku-4-5": 0, "claude-sonnet-5": 1, "claude-opus-5-5": 2, "claude-opus-5": 2, "claude-fable-5-1": 3}
+TIER = {
+    "claude-haiku-4-5": 0, "claude-sonnet-5-5": 1, "claude-sonnet-5": 1,
+    "claude-opus-5-5": 2, "claude-opus-5": 2, "claude-fable-5-1": 3,
+}
 DISPLAY = {
     "claude-haiku-4-5": "Haiku 4.5",
+    "claude-sonnet-5-5": "Sonnet 5.5",
     "claude-sonnet-5": "Sonnet 5",
     "claude-opus-5-5": "Opus 5.5",
     "claude-opus-5": "Opus 5",
@@ -76,8 +86,8 @@ SYSTEM_PROMPT = (
 BASELINE_INSTRUCTIONS = (
     "Choose which Claude model and effort level should run the prompt below.\n"
     "Models, cheapest first: claude-haiku-4-5 (tier 0, alias haiku; it has no effort "
-    "parameter, so effort must be null), claude-sonnet-5 (tier 1, alias sonnet), "
-    "claude-opus-5-5 (tier 2, alias opus), claude-opus-5 (tier 2, previous generation, "
+    "parameter, so effort must be null), claude-sonnet-5-5 (tier 1, alias sonnet), "
+    "claude-sonnet-5 (tier 1, previous generation, alias sonnet), claude-opus-5-5 (tier 2, alias opus), claude-opus-5 (tier 2, previous generation, "
     "alias opus), claude-fable-5-1 (tier 3, alias fable, the most capable and most "
     "expensive). Effort levels: low, medium, high, xhigh, max.\n"
     "Pick the cheapest pair you expect to complete the task well. Fill every field of "
@@ -207,7 +217,7 @@ def find_claude_cli() -> str | None:
     return None
 
 
-def grade_cli(user_msg: str, grader_alias: str, effort: str | None, timeout: int = 600):
+def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int = 600):
     exe = find_claude_cli()
     if not exe:
         raise BackendError("the claude CLI was not found (set MODEL_GRADE_CLAUDE_CLI to its path)")
@@ -217,12 +227,12 @@ def grade_cli(user_msg: str, grader_alias: str, effort: str | None, timeout: int
         "--tools", "",
         "--strict-mcp-config",
         "--system-prompt", SYSTEM_PROMPT,
-        "--model", grader_alias,
+        "--model", grader_model,
         "--output-format", "json",
         "--json-schema", json.dumps(load_schema()),
         "--max-turns", "3",
     ]
-    if effort and grader_alias != "haiku":
+    if effort and grader_model != "claude-haiku-4-5":
         cmd += ["--effort", effort]
     started = time.time()
     proc = subprocess.run(
@@ -250,7 +260,7 @@ def grade_cli(user_msg: str, grader_alias: str, effort: str | None, timeout: int
     usage = data.get("usage", {}) or {}
     return verdict, {
         "backend": "cli",
-        "grader_model": (list((data.get("modelUsage") or {}).keys()) or [grader_alias])[0],
+        "grader_model": (list((data.get("modelUsage") or {}).keys()) or [grader_model])[0],
         "effort": effort,
         "input_tokens": usage.get("input_tokens", 0),
         "output_tokens": usage.get("output_tokens", 0),
@@ -326,12 +336,12 @@ def grade(
     context: str | None = None,
     rubric: bool = True,
     backend: str = "auto",
-    grader_model: str = "sonnet",
+    grader_model: str = GRADER_MODEL,
     effort: str | None = "medium",
     timeout: int = 600,
 ):
     """Grade a prompt. Returns (verdict, usage). Raises BackendError or InvalidVerdict."""
-    alias = ID_TO_ALIAS.get(grader_model, grader_model)
+    # Both backends get the full model ID, so the grader never follows an alias move.
     model_id = ALIAS_TO_ID.get(grader_model, grader_model)
     if backend == "auto":
         backend = "api" if _api_available() else "cli"
@@ -340,7 +350,7 @@ def grade(
             task_message(prompt, context, rubric), grading_context(rubric), model_id, effort,
         )
     elif backend == "cli":
-        verdict, usage = grade_cli(build_user_message(prompt, context, rubric), alias, effort, timeout=timeout)
+        verdict, usage = grade_cli(build_user_message(prompt, context, rubric), model_id, effort, timeout=timeout)
     else:
         raise ValueError(f"unknown backend: {backend}")
     verdict = normalize(verdict)
@@ -397,7 +407,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-f", "--file", help="read the prompt from a file")
     parser.add_argument("--context", help="extra context for the grader (repo size, session notes)")
     parser.add_argument("--backend", choices=["auto", "api", "cli"], default="auto")
-    parser.add_argument("--grader-model", default="sonnet", help="alias or model ID of the grader (default sonnet)")
+    parser.add_argument("--grader-model", default=GRADER_MODEL, help=f"alias or model ID of the grader (default {GRADER_MODEL})")
     parser.add_argument("--effort", default="medium", choices=EFFORTS, help="grader effort (default medium)")
     parser.add_argument("--no-rubric", action="store_true", help="baseline grade without the rubric")
     parser.add_argument("--pretty", action="store_true", help="print the readable block instead of JSON")

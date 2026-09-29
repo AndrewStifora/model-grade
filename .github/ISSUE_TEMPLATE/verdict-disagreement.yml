@@ -20,7 +20,7 @@ body:
     id: expected
     attributes:
       label: Verdict you expected
-      placeholder: "Sonnet 5 @ high"
+      placeholder: "Sonnet 5.5 @ high"
     validations:
       required: true
   - type: textarea

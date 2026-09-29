@@ -15,10 +15,10 @@ Built from Anthropic's prompt-engineering and model pages (see `references/sourc
 ## What it does
 
 - Scores the prompt on scope, horizon, ambiguity, reasoning depth, verification available, cost of error, context size, modality, domain flags, output shape, and volume, and checks what it depends on beyond its own text: a skill that would trigger, connectors or tools, project context, or the conversation.
-- Applies the documented hard constraints: Haiku's 200K window, dense charts and screenshots go to Opus 5.5, biology and dual-use security stay off Fable and Opus 5.5 because of their classifiers, forced tool calls and thinking-disabled pipelines need Opus 5 or Sonnet 5, and so on.
-- Picks a tier (Haiku 4.5, Sonnet 5, Opus 5.5, Fable 5.1, with Opus 5 kept only as the classifier fallback) and an effort level (low to max), then runs a cross-tier check: would the stronger model at lower effort be cheaper per completed task? The docs say it often is, and the rubric says when.
+- Applies the documented hard constraints: Haiku's 200K window, dense charts and screenshots go to Opus 5.5, biology and dual-use security stay off Fable, Opus 5.5, and Sonnet 5.5 because of their classifiers, forced tool calls and thinking-disabled pipelines need Opus 5 or Sonnet 5, and so on.
+- Picks a tier (Haiku 4.5, Sonnet 5.5, Opus 5.5, Fable 5.1, with Sonnet 5 and Opus 5 kept only as classifier and API-compatibility fallbacks) and an effort level (low to max), then runs a cross-tier check: would the stronger model at lower effort be cheaper per completed task? The docs say it often is, and the rubric says when.
 - Reports a verdict with a cheaper alternative and concrete escalation triggers, so a cheap first attempt is safe.
-- Grades on Sonnet 5 at medium effort: the skill's frontmatter switches the invoking turn to that model, so the grade costs cents.
+- Grades on Sonnet 5 at medium effort: the skill's frontmatter switches the invoking turn to that model, pinned by ID so the grader stays the one the evals were calibrated on, and the grade costs cents.
 
 ## Install
 
@@ -52,14 +52,14 @@ A verdict looks like this:
 ```
 model-grade -> Opus 5.5 @ medium   (confidence 0.80)
 Why: Multi-file feature with a test suite; complexity 2. Opus 5.5 at medium matches Opus 5 at high in fewer tokens.
-Cheaper: Sonnet 5 @ high -- when the spec is tight and the suite is trusted; escalate on failure.
+Cheaper: Sonnet 5.5 @ high -- when the spec is tight and the suite is trusted; escalate on failure.
 Escalate if: the suite still fails after one full pass; the change spreads beyond src/notifications/.
 Signals: scope 2 | horizon 2 | ambiguity 1 | reasoning 1 | checker | medium ctx | code | depends on project
 ```
 
 ## How well does it work?
 
-On 24 labeled prompts across all four tiers, the Sonnet 5 grader with the rubric passed 125 of 126 assertions (100% after one rule fix), against 116 of 126 for the same grader without it. The baseline's misses are the ones this skill exists to prevent: Opus for problems that needed Fable, Sonnet for a deep-research memo, Haiku for an unverified script, and high effort on nearly every Opus task where the docs say medium or low holds. Per-prompt results, caveats, and how to reproduce: [docs/eval-report.md](docs/eval-report.md).
+On 25 labeled prompts across all four tiers, the Sonnet 5 grader with the rubric passed 125 of 126 graded assertions in the 1.3.0 run (one more grade hit a harness error), against 112 of 131 for the same grader without it. The baseline's misses are the ones this skill exists to prevent: Opus for problems that needed Fable, Sonnet for a deep-research memo, Haiku for an unverified script, and high effort on nearly every Opus task where the docs say medium or low holds. Per-prompt results, caveats, and how to reproduce: [docs/eval-report.md](docs/eval-report.md).
 
 ## Keeping it current
 
@@ -86,7 +86,7 @@ The API backend calls `claude-sonnet-5` with `output_config.effort = medium`, a 
 ## Repository layout
 
 ```
-SKILL.md                the skill; runs on Sonnet 5 at medium (frontmatter)
+SKILL.md                the skill; runs on Sonnet 5 at medium (frontmatter, pinned by ID)
 references/             rubric.md, model-profiles.md, sources.md + sources.json, UPDATING.md
 scripts/                grade.py, verdict_schema.json, refresh_docs.py, update.ps1/.sh, check_repo.py, build_package.py
 assets/                 mg/SKILL.md (the alias) and agents/ (the executors), installed outside the skill folder

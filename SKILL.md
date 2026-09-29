@@ -1,8 +1,8 @@
 ---
 name: model-grade
-description: Grade a prompt and pick the cheapest Claude model and effort level that will complete it well (Haiku 4.5, Sonnet 5, Opus 5.5, or Fable 5.1 at low to max effort, with Opus 5 as a classifier fallback), so an expensive model is never committed to work that does not need it. Use this whenever the user asks which model to use, whether a task needs Opus or Fable, how to save tokens or cost on a job, wants a prompt routed or delegated to a cheaper model, or types /model-grade. Also reach for it before delegating substantial work to a subagent when the user cares about cost. The optional --run flag executes the prompt on the chosen model. Subcommands update, version, and refresh maintain the skill itself.
+description: Grade a prompt and pick the cheapest Claude model and effort level that will complete it well (Haiku 4.5, Sonnet 5.5, Opus 5.5, or Fable 5.1 at low to max effort, with Sonnet 5 and Opus 5 as classifier fallbacks), so an expensive model is never committed to work that does not need it. Use this whenever the user asks which model to use, whether a task needs Opus or Fable, how to save tokens or cost on a job, wants a prompt routed or delegated to a cheaper model, or types /model-grade. Also reach for it before delegating substantial work to a subagent when the user cares about cost. The optional --run flag executes the prompt on the chosen model. Subcommands update, version, and refresh maintain the skill itself.
 argument-hint: "[--run] [--json] <prompt text | @file> | update | version | refresh   (no arguments = grade the previous request)"
-model: sonnet
+model: claude-sonnet-5
 effort: medium
 allowed-tools: Read, Glob, Grep
 ---
@@ -11,7 +11,7 @@ allowed-tools: Read, Glob, Grep
 
 Decide which Claude model and effort level a prompt deserves, then report it, or run the prompt there.
 
-This skill's frontmatter pins the grading turn to Sonnet 5 at medium effort. Sonnet grades well because the rubric turns the judgment into observable signals, and medium rather than low avoids the under-thinking the Sonnet 5 docs warn about on moderately complex prompts. If your organization's model allowlist or auto mode refused the switch, you are still on the session model; grade anyway, the procedure is identical.
+This skill's frontmatter pins the grading turn to Sonnet 5 at medium effort, by model ID, so a Claude Code alias move cannot swap in a grader the evals were not calibrated on. Sonnet grades well because the rubric turns the judgment into observable signals, and medium rather than low avoids the under-thinking the Sonnet 5 docs warn about on moderately complex prompts. If your organization's model allowlist or auto mode refused the switch, you are still on the session model; grade anyway, the procedure is identical.
 
 ## 1. Parse the invocation
 
@@ -45,7 +45,7 @@ If you are grading a request the user is about to make in this session, end with
 Delegate with the Agent tool:
 
 - `subagent_type`: `mg-run-<effort>` for Sonnet, Opus, and Fable verdicts. These executors live in `~/.claude/agents/` and pin the effort level: `mg-run-low`, `mg-run-medium`, `mg-run-high`, `mg-run-xhigh`, `mg-run-max`. When the skill was installed as a plugin they carry the plugin prefix instead: `model-grade:mg-run-<effort>`; use whichever name the Agent tool lists. For a Haiku verdict use `general-purpose` (Haiku has no effort parameter).
-- `model`: the verdict's alias (`haiku`, `sonnet`, `opus`, or `fable`). Always pass it; the executors declare `model: inherit` and rely on this override. The `opus` alias resolves to Opus 5.5 on Claude Code 2.1.280 and later and to Opus 5 before that (`claude update` moves it), so say which one a `--run` on `opus` will actually get. When the verdict names Opus 5 specifically (a section 2 constraint), use the `mg-run-opus5` executor instead and pass no `model` override: it is pinned to `claude-opus-5` at high, and an override would replace it.
+- `model`: the verdict's alias (`haiku`, `sonnet`, `opus`, or `fable`). Always pass it; the executors declare `model: inherit` and rely on this override. The `opus` alias resolves to Opus 5.5 on Claude Code 2.1.280 and later and to Opus 5 before that (`claude update` moves it), so say which one a `--run` on `opus` will actually get. Likewise the `sonnet` alias resolves to Sonnet 5.5 on Claude Code 2.1.284 and later and to Sonnet 5 before that. When the verdict names Opus 5 or Sonnet 5 specifically (a section 2 constraint), use the `mg-run-opus5` or `mg-run-sonnet5` executor instead and pass no `model` override: they are pinned to `claude-opus-5` and `claude-sonnet-5` at high, and an override would replace them. If the verdict gave that fallback another effort, say the run uses high.
 - `run_in_background`: `false`, so the result comes back in this turn and you can relay it.
 - `prompt`: the user's request verbatim, then the context the executor needs (working directory, files named, acceptance criteria you inferred), then: "Report the outcome plainly. If you hit a refusal or the task turns out to exceed what you can do, say so in your first sentence."
 
@@ -54,6 +54,7 @@ If the Agent tool rejects an `mg-run-*` type, the executors are either not insta
 When the executor returns, relay its outcome. Then apply the escalation rules once, and say that you did:
 
 - It reported a refusal (a Fable executor): re-run on Opus at the same effort.
+- It reported a refusal on Sonnet 5.5: re-run on Sonnet 5 with `mg-run-sonnet5`.
 - It reported a failure that matches an `escalate_if` condition: re-run one step up, next effort level first, next tier if already at xhigh.
 
 Do not loop beyond one escalation without asking. Do not use `--run` for a prompt that depends on this session's conversation history, because the executor starts with none; say so and let the user decide.

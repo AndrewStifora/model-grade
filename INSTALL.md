@@ -38,7 +38,7 @@ Notes:
 - Nothing else is needed. Python is only used by the optional `scripts/grade.py`, the evals, and `/mg refresh`.
 - Skills appear immediately. The `mg-run-*` executors used by `--run` can take a couple of minutes or a new session to show up.
 - The grade itself runs on Sonnet 5 at medium effort, so it costs cents. If your session is in auto mode and it declines the model switch, the grade runs on your session model instead; the result is the same.
-- If your plan does not include one of the models (Haiku 4.5, Sonnet 5, Opus 5.5, Fable 5.1), say so in the request, for example "no Fable access", and the grader caps its verdict accordingly.
+- If your plan does not include one of the models (Haiku 4.5, Sonnet 5.5, Opus 5.5, Fable 5.1), say so in the request, for example "no Fable access", and the grader caps its verdict accordingly.
 - Opus 5.5 needs Claude Code 2.1.280 or later for the `opus` alias to reach it; run `claude update` if `/mg version` or a `--run` says the alias still resolves to Opus 5.
 
 ---

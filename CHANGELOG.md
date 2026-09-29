@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 (2026-09-28)
+
+- Claude Sonnet 5.5 added as the tier-1 model (`claude-sonnet-5-5`, $2 / $10 per million tokens, the same as Sonnet 5; default effort high; recalibrated effort levels). Sonnet 5, now legacy, stays available as the fallback for work that Sonnet 5.5's `cyber`, `bio`, `frontier_llm`, or `general_harms` classifiers may decline, and for integrations that force `tool_choice`, send `thinking: disabled`, or use `computer_20251124`. Server-side fallback already retries `cyber` and `frontier_llm` declines on Sonnet 5.
+- Rubric: new hard constraint for work that builds or trains competing AI models; the security, biology, forced-tool, thinking-disabled, and computer-use constraints now cover Sonnet 5.5; Sonnet 5.5 effort notes from its prompting page (verification at low, check-ins at low and medium, "Think the problem through before you answer." for short structured reasoning at high); cache continuity notes that no other model reads Sonnet 5.5 thinking blocks.
+- The grader stays on Sonnet 5 at medium, now pinned by model ID in the skill's frontmatter, in `grade.py` (`GRADER_MODEL`), and in `run_evals.py`, so a Claude Code alias move cannot change it. The CLI backend passes the full model ID. The `sonnet` alias resolves to Sonnet 5.5 from Claude Code 2.1.284 (Sonnet 5 before that), so the pin keeps a `claude update` from switching the grader, and Sonnet 5 fallbacks go through `mg-run-sonnet5`.
+- Executor `mg-run-sonnet5` added (pinned to `claude-sonnet-5` at high) for verdicts that name Sonnet 5 explicitly; a Sonnet 5.5 refusal re-runs there.
+- Evals: tier-1 labels moved to Sonnet 5.5; picking a fallback model without a constraint now fails as it does for Opus 5; eval 25 (a claims pipeline that forces `tool_choice`) added. With the rubric: 125 of 126 graded assertions (one grade hit the CLI's turn cap); without it: 112 of 131. A comparison pass with Sonnet 5.5 as the grader scored 129 of 131 at about twice the cost; see `docs/eval-report.md`.
+
 ## 1.2.2 (2026-09-25)
 
 - The repository is public, and every change now goes issue, branch, pull request, green CI, squash merge. `main` is protected by a ruleset, and local hooks in `.githooks/` block direct pushes and scan commits for secrets. Enable them in a clone with `git config core.hooksPath .githooks`.
