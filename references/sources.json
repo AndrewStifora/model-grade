@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-09-23",
+  "fetched": "2026-09-28",
   "discovery": "https://platform.claude.com/llms.txt",
   "pages": [
     {
@@ -11,14 +11,14 @@
     {
       "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices.md",
       "title": "Prompting best practices",
-      "sha256": "d8da822f28a9df98f90c206466a5e808a561a3c6e9f948c3a44f27998f54cf12",
-      "fetched": "2026-09-23"
+      "sha256": "cbbcf208fe6ad0e819c4a65b3b1cfa3555e20d50a617233e78360f962450d35c",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5.md",
       "title": "Prompting Claude Fable 5",
-      "sha256": "cfa1c5d6e2d27731febc2c4ce5845f9439d9dabf99b4cb0192cc9a1be6e7e594",
-      "fetched": "2026-09-23"
+      "sha256": "44732ba550fc55f13c061d47f755169246f9b4872a7f51fe63a6c9985503313e",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1.md",
@@ -47,110 +47,128 @@
     {
       "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5.md",
       "title": "Prompting Claude Sonnet 5",
-      "sha256": "07e7db846f96915a1d533fe6f62f7812790a966361b9982b6522557e74d08127",
-      "fetched": "2026-09-23"
+      "sha256": "560089d4c75943749b7a81afdf628290c518713e8e82aff88b389c5cc5544c8e",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/fable-5/overview.md",
       "title": "Claude Fable 5",
-      "sha256": "05814473259d2a2ae6550c98a949dd47fe2824f41fbab3160670f868c146ae1a",
-      "fetched": "2026-09-23"
+      "sha256": "fb0b63b22cfc3b59726463680f8cc13527b5e5d22c3167d4094c5ec085478b49",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview.md",
       "title": "Claude Fable 5.1",
-      "sha256": "2a98d9a06c7f3cf710fa11ad838e6b314c07de980044ebc3165a2bbcb47b6ec9",
-      "fetched": "2026-09-23"
+      "sha256": "f32fbe39812dd73d0bfc8e58de18da67a59571ac5abb43a4c0bc645d9c8a8904",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/haiku-4-5/overview.md",
       "title": "Claude Haiku 4.5",
-      "sha256": "f0cdb6d5a42f633fb5668abc1c5cbc8f22f4eb81837408528347d02c2d4015dc",
-      "fetched": "2026-09-23"
+      "sha256": "be8631fdf43f4edd374e980f82d5578e9795a09637c9a0b70d353139a0fec173",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/mythos-5/overview.md",
       "title": "Claude Mythos 5",
-      "sha256": "841622984d8625a456cae15f7b6c1b1c0c84ea20e864e1476c775e6a89a345d6",
-      "fetched": "2026-09-23"
+      "sha256": "05d16e30084326796d023b82ca9e783534d8b430e4d768a2ac3692ce7e8d3562",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/mythos-5-1/overview.md",
       "title": "Claude Mythos 5.1",
-      "sha256": "5f2d23e95d4a0430f4b11cedb3afa449ece220ee1086346bc76819111d1e994c",
-      "fetched": "2026-09-23"
+      "sha256": "5a45a1dea25b58d301a7f5ba5414ba5dd8e374568dcbff500abb8f8c0f5b5356",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-4-5/overview.md",
       "title": "Claude Opus 4.5",
-      "sha256": "b241c8f9247b8d2d6c884b794ebcddc6369add95d7f28dda25c17ca92cec8481",
-      "fetched": "2026-09-23"
+      "sha256": "83863be09e6e27da97ccfdc6d0f9bb79eb8a7a8872e56e7a4e3a6517a646acb1",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-4-6/overview.md",
       "title": "Claude Opus 4.6",
-      "sha256": "ac2d275d99c560028952f90b8ddaebec735ae6804b779e7d025d350e32e30c44",
-      "fetched": "2026-09-23"
+      "sha256": "d1b719f970429c793ffdca984a9d0abcdaaf78d9fe0945a599ff93679bcd6c6b",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-4-7/overview.md",
       "title": "Claude Opus 4.7",
-      "sha256": "7674fa3f338c897b5a5fbd5e1190f71b8e99912e3a21d8cec83f4cd6dd18ec45",
-      "fetched": "2026-09-23"
+      "sha256": "6789c77b35e41794a6a276b1126199b98f7204efa9a446f5561fcd72bfa99655",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-4-8/overview.md",
       "title": "Claude Opus 4.8",
-      "sha256": "0242f749d7593fc8328006a561ffdeb1f512c1be806ef20c1e3d1f8ff1634da1",
-      "fetched": "2026-09-23"
+      "sha256": "9cc2a897cb6bd283e4ef0730015d6aab15e28df7717fc63dec9ae493579f6507",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-5/overview.md",
       "title": "Claude Opus 5",
-      "sha256": "cc97111bea5660572864a320a0a932da7f55f015cdc7c68375b0fccca7a3a519",
-      "fetched": "2026-09-23"
+      "sha256": "18a78d2967ab31b92fb5651ead59c539b45ece7c33b5e857a6f8f3e72c74272d",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-5-5/overview.md",
       "title": "Claude Opus 5.5",
-      "sha256": "3325e10a852cc3f40cfaf01737d97a5cdf3a37b4cd7c0b68005e204ea32b1dd4",
-      "fetched": "2026-09-23"
+      "sha256": "42d880d368fbe9784c80828b482dcfd5cdd96dcf79704e3da732b3eff198553d",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/sonnet-4-5/overview.md",
       "title": "Claude Sonnet 4.5",
-      "sha256": "96b7fa935e7104e66324e577822db7f111866de703c017aacd828eb863f6b220",
-      "fetched": "2026-09-23"
+      "sha256": "4c83bee387b9b5e604b7ac926753b515e6cd61675468018613ae9dfc8733dc8a",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/sonnet-4-6/overview.md",
       "title": "Claude Sonnet 4.6",
-      "sha256": "a96e4da1e651e04b41c9048304c9404dbe97827ff1f20ac61f8ff4e56fe15ba9",
-      "fetched": "2026-09-23"
+      "sha256": "96c938e14c1c642f1aab807e134a2e7ab26a1e9fbe94a75e4bdacd623dc8f384",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/sonnet-5/overview.md",
       "title": "Claude Sonnet 5",
-      "sha256": "c21963ec0337d1ff890ce753f95b315603d5313d9874df92c562b3b0b65f9a7e",
-      "fetched": "2026-09-23"
+      "sha256": "68f590298ac0f5e6271fd2d9707084e4f9d2e7e22358d4bfa8f5279cbd690708",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1.md",
       "title": "What's new",
-      "sha256": "59d2a26f6e123d009a9e86aac9283705f7bfd15549b185dc07aa1858241baf19",
-      "fetched": "2026-09-23"
+      "sha256": "d0865b3a3f03c114ebbb5922f66ae2b058f0fa9658617600ad2ffb018e3945f1",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5.md",
       "title": "What's new",
-      "sha256": "90fb6efa547a193cbf1eb4b836ef5310234da054f2e83abbe15ce41b0d4c5a6a",
-      "fetched": "2026-09-23"
+      "sha256": "6ba1ff350b0ced73d0eeba0330b37f14cd516a7100f3eb404410f82e6826d546",
+      "fetched": "2026-09-28"
     },
     {
       "url": "https://platform.claude.com/docs/en/models/sonnet-5/whats-new-sonnet-5.md",
       "title": "What's new",
-      "sha256": "02f0df53f8780f93ca88c9691f530f07032ebd5d41c88ec838fc0f9aa85007db",
-      "fetched": "2026-09-23"
+      "sha256": "68f590298ac0f5e6271fd2d9707084e4f9d2e7e22358d4bfa8f5279cbd690708",
+      "fetched": "2026-09-28"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5.md",
+      "title": "Prompting Claude Sonnet 5.5",
+      "sha256": "1e70fad582cca399acad4ceb526c327b1be12eeb7966567aae96b6c946a00d73",
+      "fetched": "2026-09-28"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/overview.md",
+      "title": "Claude Sonnet 5.5",
+      "sha256": "0d7f0d48ddb9a796caf739e677f5cf882089ffd70dcb3fdb400432af43b83120",
+      "fetched": "2026-09-28"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5.md",
+      "title": "What's new",
+      "sha256": "82a7edaf8327512c94de4d7c24a09ba8b75d0ad8d5f73f2f67c19ba8ae6cb0e6",
+      "fetched": "2026-09-28"
     }
   ]
 }
