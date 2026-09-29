@@ -12,7 +12,8 @@ Backends
        rubric and profiles go in a cached system block, so repeated grades pay
        cache-read prices for that prefix.
   cli  Headless `claude -p` using your Claude Code login. Built-in tools and MCP
-       servers are disabled so each grade costs a few thousand input tokens.
+       servers are disabled so each grade costs a few thousand input tokens, and
+       your hooks are disabled so they cannot add to or act on a grade.
   The default is api when the SDK and a key are present, otherwise cli.
 
 Usage
@@ -234,6 +235,8 @@ def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int
         "--no-session-persistence",
         "--tools", "",
         "--strict-mcp-config",
+        # The user's hooks would add their context to every grade, slow it, and act outside it.
+        "--settings", json.dumps({"disableAllHooks": True}),
         "--system-prompt", SYSTEM_PROMPT,
         "--model", grader_model,
         "--output-format", "json",
