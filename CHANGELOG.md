@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 (2026-09-29)
+
+- The CLI grader no longer drops a verdict after three invalid tool calls. `claude -p --json-schema` returns the verdict through a StructuredOutput tool call, and when a call fails the schema, the grader tries again on the next turn. About four grades in ten need one retry, most often because the grader passed the whole verdict as a single JSON string. `--max-turns 3` allowed three calls, so three invalid calls in a row ended the grade with `error_max_turns` (evals 8 and 25 in the 1.3.0 runs). `grade.py` now allows five calls, which is Claude Code 2.1.284's own limit. If a session still ends without a verdict, it grades once more in a fresh session, because a session that keeps repeating the same invalid call does not recover (eval 25 leaving out `cheaper_alternative`). Reported tokens and cost include both sessions.
+- Evals 8 and 25, five runs each with the rubric: 10 of 10 verdicts and 49 of 50 assertions, against 9 of 10 and 45 of 50 before the change. The one miss is eval 25 at xhigh, the known effort miss. The user's hooks and the 1.3.0 schema were ruled out: the same retries happen with hooks disabled and on the 1.2.2 grader.
+
 ## 1.4.0 (2026-09-29)
 
 - `/mg update` now ends by checking the Claude Code CLI: it compares `claude --version` with `CLAUDE_CODE_VERSION` (2.1.284, the first release where both the `sonnet` and `opus` aliases reach Sonnet 5.5 and Opus 5.5) and recommends `claude update` when the CLI is older, because an older CLI can send a `--run` to a different model than the verdict names. A missing CLI or an unreadable version only skips the check; it never fails the update. `/mg version` runs the same check.
