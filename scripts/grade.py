@@ -46,8 +46,8 @@ SCHEMA_PATH = HERE / "verdict_schema.json"
 
 GRADER_MODEL = "claude-sonnet-5"
 
-# Each alias maps to its tier's current model. The Claude Code `sonnet` alias still
-# resolves to Sonnet 5 on v2.1.282, so the grader and the fallback are pinned by ID.
+# Each alias maps to its tier's current model. The Claude Code `sonnet` alias resolves
+# to Sonnet 5.5 from v2.1.284 (Sonnet 5 before), so the grader and fallback are pinned by ID.
 ALIAS_TO_ID = {
     "haiku": "claude-haiku-4-5",
     "sonnet": "claude-sonnet-5-5",
