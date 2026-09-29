@@ -20,7 +20,7 @@ Eval results land outside the repo in `../model-grade-workspace/iteration-N/` (s
 - A rubric or profile change needs a sentence from Anthropic's docs behind it. Quote it in `references/model-profiles.md`; `references/sources.md` and `sources.json` say which pages count.
 - The verdict schema (`scripts/verdict_schema.json`), the grader's maps (`ALIAS_TO_ID`, `ID_TO_ALIAS`, `TIER`, `DISPLAY` in `scripts/grade.py`), the executor definitions in `assets/agents/`, and the eval labels in `evals/evals.json` must name the same models. `check_repo.py` enforces it.
 - A rubric change is not done until the evals ran: the with-rubric pass rate should stay at or near 100% and the no-rubric baseline clearly below it. Read any eval that moved before deciding the change is right.
-- `SKILL.md` runs on Sonnet 5 at medium effort (its frontmatter) and is loaded whole on every invocation. Keep it short; put reasoning in `references/`.
+- `SKILL.md` runs on Sonnet 5 at medium effort (its frontmatter pins `claude-sonnet-5` by ID) and is loaded whole on every invocation. Keep it short; put reasoning in `references/`.
 - `references/docs-cache/` is generated and git-ignored. Never commit it, never edit it.
 - The `mg` alias lives at `assets/mg/SKILL.md` and the executors at `assets/agents/`; installers and `update` copy them out. Edit them here, not in `~/.claude`.
 - For a new model, follow `references/UPDATING.md` in order. Bump `VERSION` (and `.claude-plugin/plugin.json`) and add a `CHANGELOG.md` section in the same pull request; after it merges, tag `vX.Y.Z` on `main` and push the tag to release.
