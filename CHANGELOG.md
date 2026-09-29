@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2 (2026-09-29)
+
+- The CLI grader now runs with your hooks disabled (`--settings '{"disableAllHooks": true}'`), just as it already runs without built-in tools or MCP servers. Before this, a `UserPromptSubmit` hook's context was added to every grade, so grades and eval results depended on whoever ran them. Each grade also waited for the hooks to start: on a Windows machine with two PowerShell hooks, a session took 6 to 13 s instead of 2 to 3 s. Hooks could act outside the grade too, as when a spoken-summary hook cut off the interactive session's audio on every grade of an eval run. The skill itself and the `--run` executors are unaffected.
+
 ## 1.4.1 (2026-09-29)
 
 - The CLI grader no longer drops a verdict after three invalid tool calls. `claude -p --json-schema` returns the verdict through a StructuredOutput tool call, and when a call fails the schema, the grader tries again on the next turn. About four grades in ten need one retry, most often because the grader passed the whole verdict as a single JSON string. `--max-turns 3` allowed three calls, so three invalid calls in a row ended the grade with `error_max_turns` (evals 8 and 25 in the 1.3.0 runs). `grade.py` now allows five calls, which is Claude Code 2.1.284's own limit. If a session still ends without a verdict, it grades once more in a fresh session, because a session that keeps repeating the same invalid call does not recover (eval 25 leaving out `cheaper_alternative`). Reported tokens and cost include both sessions.
