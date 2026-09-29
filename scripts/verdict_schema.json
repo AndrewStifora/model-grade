@@ -3,7 +3,7 @@
   "properties": {
     "model": {
       "type": "string",
-      "enum": ["claude-haiku-4-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]
+      "enum": ["claude-haiku-4-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]
     },
     "alias": {
       "type": "string",
@@ -45,7 +45,7 @@
     "cheaper_alternative": {
       "type": ["object", "null"],
       "properties": {
-        "model": {"type": "string", "enum": ["claude-haiku-4-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
+        "model": {"type": "string", "enum": ["claude-haiku-4-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
         "effort": {"type": ["string", "null"], "enum": ["low", "medium", "high", "xhigh", "max", null]},
         "when": {"type": "string"}
       },

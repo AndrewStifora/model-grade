@@ -102,7 +102,7 @@ check(bool(fm.get("description")), "SKILL.md: description missing")
 fm = frontmatter(ROOT / "assets" / "mg" / "SKILL.md")
 check(fm.get("name") == "mg", "assets/mg/SKILL.md: name must be mg")
 agents = sorted((ROOT / "assets" / "agents").glob("*.md"))
-check(len(agents) >= 6, f"expected at least six executor definitions, found {len(agents)}")
+check(len(agents) >= 7, f"expected at least seven executor definitions, found {len(agents)}")
 for agent in agents:
     fm = frontmatter(agent)
     check(fm.get("name") == agent.stem, f"{agent.name}: frontmatter name differs from file name")
