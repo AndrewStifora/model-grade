@@ -46,6 +46,14 @@ SCHEMA_PATH = HERE / "verdict_schema.json"
 
 GRADER_MODEL = "claude-sonnet-5"
 
+# The CLI returns the verdict through a StructuredOutput tool call and, when a call fails
+# the schema, lets the grader try again on the next turn. --max-turns N allows N calls; five
+# matches Claude Code 2.1.284's own limit of five invalid calls.
+CLI_MAX_TURNS = 5
+# How a session ends when its retries ran out without a verdict. A session stuck repeating
+# the same invalid call does not recover with more turns, but a fresh session usually does.
+CLI_RETRIES_EXHAUSTED = ("error_max_turns", "error_max_structured_output_retries")
+
 # Each alias maps to its tier's current model. The Claude Code `sonnet` alias resolves
 # to Sonnet 5.5 from v2.1.284 (Sonnet 5 before), so the grader and fallback are pinned by ID.
 ALIAS_TO_ID = {
@@ -230,24 +238,30 @@ def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int
         "--model", grader_model,
         "--output-format", "json",
         "--json-schema", json.dumps(load_schema()),
-        "--max-turns", "3",
+        "--max-turns", str(CLI_MAX_TURNS),
     ]
     if effort and grader_model != "claude-haiku-4-5":
         cmd += ["--effort", effort]
     started = time.time()
-    proc = subprocess.run(
-        cmd, input=user_msg, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=timeout,
-    )
-    stdout = proc.stdout.strip()
-    if not stdout:
-        raise BackendError(f"claude -p produced no output (exit {proc.returncode}): {proc.stderr.strip()[-500:]}")
-    try:
-        data = json.loads(stdout.splitlines()[-1])
-    except json.JSONDecodeError as exc:
-        raise BackendError(f"could not parse claude -p output: {stdout[-500:]}") from exc
+    sessions = []
+    for _ in range(2):  # the second session runs only when the first ran out of retries
+        proc = subprocess.run(
+            cmd, input=user_msg, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=timeout,
+        )
+        stdout = proc.stdout.strip()
+        if not stdout:
+            raise BackendError(f"claude -p produced no output (exit {proc.returncode}): {proc.stderr.strip()[-500:]}")
+        try:
+            data = json.loads(stdout.splitlines()[-1])
+        except json.JSONDecodeError as exc:
+            raise BackendError(f"could not parse claude -p output: {stdout[-500:]}") from exc
+        sessions.append(data)
+        if not (data.get("is_error") and data.get("subtype") in CLI_RETRIES_EXHAUSTED):
+            break
     if data.get("is_error"):
         diag = {k: data.get(k) for k in ("subtype", "terminal_reason", "api_error_status", "num_turns", "result", "permission_denials")}
+        diag["sessions"] = len(sessions)
         raise BackendError(
             f"claude -p reported an error: {json.dumps(diag)}; stderr: {proc.stderr.strip()[-400:]}"
         )
@@ -257,17 +271,17 @@ def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int
             verdict = json.loads(data.get("result", ""))
         except json.JSONDecodeError as exc:
             raise BackendError("claude -p returned no structured output") from exc
-    usage = data.get("usage", {}) or {}
+    # Usage and cost cover every session, so a fresh retry shows up in eval cost reports.
+    usage = {k: sum((s.get("usage") or {}).get(k, 0) or 0 for s in sessions) for k in (
+        "input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")}
+    costs = [s["total_cost_usd"] for s in sessions if s.get("total_cost_usd") is not None]
     return verdict, {
         "backend": "cli",
         "grader_model": (list((data.get("modelUsage") or {}).keys()) or [grader_model])[0],
         "effort": effort,
-        "input_tokens": usage.get("input_tokens", 0),
-        "output_tokens": usage.get("output_tokens", 0),
-        "cache_read_input_tokens": usage.get("cache_read_input_tokens", 0),
-        "cache_creation_input_tokens": usage.get("cache_creation_input_tokens", 0),
-        "duration_ms": data.get("duration_ms", int((time.time() - started) * 1000)),
-        "cost_usd": data.get("total_cost_usd"),
+        **usage,
+        "duration_ms": sum(s.get("duration_ms") or 0 for s in sessions) or int((time.time() - started) * 1000),
+        "cost_usd": sum(costs) if costs else None,
     }
 
 
