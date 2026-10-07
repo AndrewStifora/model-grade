@@ -22,11 +22,11 @@ Built from Anthropic's prompt-engineering and model pages (see `references/sourc
 
 ## Install
 
-Everything installs at the user level, so it works in every project: `~/.claude/skills/model-grade` (this repository), `~/.claude/skills/mg` (the alias, from `assets/mg`), and `~/.claude/agents/mg-run-*.md` (the executors, from `assets/agents`). Pick one route:
+Everything installs at the user level, so it works in every project: `~/.claude/skills/model-grade` (this repository) and `~/.claude/skills/mg` (the alias, from `assets/mg`). Because the repository carries `.claude-plugin/plugin.json`, Claude Code 2.1.157 and later loads the skill folder as the plugin `model-grade@skills-dir`, which registers the executors from `assets/agents` as `model-grade:mg-run-*`; leave it enabled in `/plugin`, since disabling it also removes `/model-grade`. Pick one route:
 
 - **Drag and drop, no terminal.** Download `model-grade-install.zip` from the [latest release](https://github.com/AndrewStifora/model-grade/releases/latest) (or the repository zip from the green Code button), drag it into a Claude Code chat, and send: `Install the skill package in this zip by following its INSTALL.md exactly.`
 - **Scripts.** From a clone or an unzipped copy: `pwsh -File install.ps1` on Windows, `bash install.sh` on macOS or Linux.
-- **Git.** `git clone https://github.com/AndrewStifora/model-grade ~/.claude/skills/model-grade`, then run `install.ps1` or `install.sh` once from that folder to place the alias and executors. Later updates are `git pull` or `/mg update`.
+- **Git.** `git clone https://github.com/AndrewStifora/model-grade ~/.claude/skills/model-grade`, then run `install.ps1` or `install.sh` once from that folder to place the alias. Later updates are `git pull` or `/mg update`.
 - **Plugin (experimental).** `claude plugin marketplace add AndrewStifora/model-grade` then `claude plugin install model-grade@andrewstifora`. The skill, the alias, and the executors load under the `model-grade:` prefix (the bare `/mg` and `/model-grade` still work unless another skill owns those names). Do not combine this with a user-level install of the same skill.
 
 `INSTALL.md` has the full instructions, including the steps Claude follows for the drag-and-drop route.
@@ -43,7 +43,7 @@ Everything installs at the user level, so it works in every project: `~/.claude/
 /mg refresh
 ```
 
-The bare form grades the previous request in the conversation. `--run` hands the prompt to a subagent pinned to the chosen model and effort, then relays the result and escalates once if the executor fails or refuses. `update` pulls or downloads the newest version and refreshes the alias and executors; `version` prints the installed version; `refresh` re-fetches the Anthropic pages and reports what changed. `/model-grade` is the long name of the same skill.
+The bare form grades the previous request in the conversation. `--run` hands the prompt to a subagent pinned to the chosen model and effort, then relays the result and escalates once if the executor fails or refuses. `update` pulls or downloads the newest version and refreshes the alias; `version` prints the installed version; `refresh` re-fetches the Anthropic pages and reports what changed. `/model-grade` is the long name of the same skill.
 
 Claude also invokes the skill on its own when you ask which model to use, whether something needs Opus or Fable, or how to save cost on a task.
 
