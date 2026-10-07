@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.3 (2026-10-07)
+
+- The `--run` executors no longer load twice (#12). Every install puts the whole repository at `~/.claude/skills/model-grade`, `.claude-plugin/plugin.json` included, and since Claude Code 2.1.157 a skills folder holding that manifest loads as the plugin `model-grade@skills-dir`, which registers the seven executors as `model-grade:mg-run-*`. The installers and `update` also copied them into `~/.claude/agents/`, so each executor was listed twice (about 0.8k tokens a turn). They now copy the executors only for a folder without the manifest, and move copies an earlier release left in `~/.claude/agents/` to `~/.claude/model-grade-backups/<timestamp>-agents/`. Other files in `~/.claude/agents/` are left alone.
+- Do not disable `model-grade@skills-dir` in `/plugin` to remove the duplicates: it also unloads `/model-grade` and `/mg`.
+- The update that installs 1.4.3 is carried out by the previous release's script, so the old copies are moved out on the next update, or right away by running `install.ps1` or `install.sh` from the skill folder.
+- `SKILL.md` names the plugin-prefixed executors first and copies `assets/agents/` only when the manifest is missing. `check_repo.py` now checks that the manifest lists every executor and carries the release version. `validate` covers both layouts and a stale copy in `agents/` on Linux and Windows.
+
 ## 1.4.2 (2026-09-29)
 
 - The CLI grader now runs with your hooks disabled (`--settings '{"disableAllHooks": true}'`), just as it already runs without built-in tools or MCP servers. Before this, a `UserPromptSubmit` hook's context was added to every grade, so grades and eval results depended on whoever ran them. Each grade also waited for the hooks to start: on a Windows machine with two PowerShell hooks, a session took 6 to 13 s instead of 2 to 3 s. Hooks could act outside the grade too, as when a spoken-summary hook cut off the interactive session's audio on every grade of an eval run. The skill itself and the `--run` executors are unaffected.
