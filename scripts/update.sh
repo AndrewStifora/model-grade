@@ -59,14 +59,30 @@ for old in "$target"/skills/model-grade.bak-*; do
 done
 
 # The alias and the executors live outside the skill folder; refresh them from assets.
-mkdir -p "$target/skills/mg" "$target/agents"
+mkdir -p "$target/skills/mg"
 cp "$skill/assets/mg/SKILL.md" "$target/skills/mg/SKILL.md"
-cp "$skill"/assets/agents/*.md "$target/agents/"
+# With .claude-plugin/plugin.json the skill folder loads as the plugin model-grade@skills-dir, which
+# registers the executors itself; copies in agents/ would list each one twice, so earlier copies move out.
+if [ -f "$skill/.claude-plugin/plugin.json" ]; then
+  moved=""
+  for f in "$skill"/assets/agents/*.md; do
+    old="$target/agents/$(basename "$f")"
+    [ -e "$old" ] || continue
+    if [ -z "$moved" ]; then moved="$bakroot/$(date +%Y%m%d-%H%M%S)-agents"; mkdir -p "$moved"; fi
+    mv "$old" "$moved/"
+  done
+  if [ -n "$moved" ]; then echo "executor copies from an earlier install moved to $moved"; fi
+  executors="executors model-grade:mg-run-* load from the plugin manifest"
+else
+  mkdir -p "$target/agents"
+  cp "$skill"/assets/agents/*.md "$target/agents/"
+  executors="executors mg-run-* refreshed in $target/agents"
+fi
 
 after="$(tr -d '[:space:]' < "$skill/VERSION")"
 echo
 echo "model-grade $before -> $after   ($skill)"
-echo "alias /mg and executors mg-run-* refreshed in $target/skills/mg and $target/agents"
+echo "alias /mg refreshed in $target/skills/mg; $executors"
 if [ -f "$skill/CHANGELOG.md" ]; then echo; head -25 "$skill/CHANGELOG.md"; fi
 
 # Last, so it is the line the user sees: is the Claude Code CLI as new as this release expects?

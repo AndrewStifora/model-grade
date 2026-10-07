@@ -4,7 +4,8 @@
 Compiles the scripts, validates every JSON file, and cross-checks the pieces that
 must agree with each other: the eval labels against the verdict schema's model and
 effort lists, the grader's model maps against the schema, the executor definitions
-against their file names, and VERSION against CHANGELOG.md. Exit 0 when everything
+against their file names and the plugin manifest, and VERSION against CHANGELOG.md
+and the manifest. Exit 0 when everything
 passes, 1 otherwise. The validate and release workflows run it; run it yourself
 before committing a rubric or schema change.
 """
@@ -107,11 +108,18 @@ for agent in agents:
     fm = frontmatter(agent)
     check(fm.get("name") == agent.stem, f"{agent.name}: frontmatter name differs from file name")
     check(fm.get("effort") in efforts, f"{agent.name}: effort {fm.get('effort')!r} is not a known level")
+# Installs get the executors only through the plugin manifest, so it must register every one.
+plugin = load_json(ROOT / ".claude-plugin" / "plugin.json")
+if plugin:
+    listed = sorted(Path(p).name for p in plugin.get("agents", []))
+    check(listed == [a.name for a in agents], f".claude-plugin/plugin.json lists agents {listed}, assets/agents holds {[a.name for a in agents]}")
 
 # 6. Version and changelog agree.
 version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 check(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None, f"VERSION {version!r} is not MAJOR.MINOR.PATCH")
 check(f"## {version} " in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"), f"CHANGELOG.md has no section for {version}")
+if plugin:
+    check(plugin.get("version") == version, f".claude-plugin/plugin.json version {plugin.get('version')!r} differs from VERSION {version}")
 
 # 7. The Claude Code version the release is built for, which update compares with `claude --version`.
 cc_file = ROOT / "CLAUDE_CODE_VERSION"

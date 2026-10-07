@@ -2,14 +2,16 @@
 # Installs model-grade from this folder (a git checkout or an unzipped release) at the user level:
 #   ~/.claude/skills/model-grade  (this folder, minus .git)
 #   ~/.claude/skills/mg           (the /mg alias, from assets/mg)
-#   ~/.claude/agents/mg-run-*.md  (the --run executors, from assets/agents)
+# The --run executors in assets/agents load through .claude-plugin/plugin.json: Claude Code (2.1.157+)
+# loads a skills folder holding that manifest as the plugin model-grade@skills-dir. They are copied to
+# ~/.claude/agents only for a copy without the manifest; with it, copies would list each executor twice.
 # Usage: bash install.sh
 #        CLAUDE_HOME=/some/other/.claude bash install.sh   (only for testing)
 set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd -P)"
 target="${CLAUDE_HOME:-$HOME/.claude}"
 skill="$target/skills/model-grade"
-mkdir -p "$target/skills" "$target/agents"
+mkdir -p "$target/skills"
 
 # A previous copy is kept under $target/model-grade-backups, never beside the skill:
 # Claude Code loads every folder under skills/ that holds a SKILL.md, so a leftover
@@ -37,12 +39,27 @@ done
 
 mkdir -p "$target/skills/mg"
 cp "$root/assets/mg/SKILL.md" "$target/skills/mg/SKILL.md"
-cp "$root"/assets/agents/*.md "$target/agents/"
+if [ -f "$skill/.claude-plugin/plugin.json" ]; then
+  # Earlier releases copied the executors into agents/ as well; move those copies out.
+  moved=""
+  for f in "$skill"/assets/agents/*.md; do
+    old="$target/agents/$(basename "$f")"
+    [ -e "$old" ] || continue
+    if [ -z "$moved" ]; then moved="$bakroot/$(date +%Y%m%d-%H%M%S)-agents"; mkdir -p "$moved"; fi
+    mv "$old" "$moved/"
+  done
+  if [ -n "$moved" ]; then echo "Executor copies from an earlier install moved to $moved"; fi
+  executors="executors model-grade:mg-run-* load from the plugin manifest"
+else
+  mkdir -p "$target/agents"
+  cp "$skill"/assets/agents/*.md "$target/agents/"
+  executors="executors mg-run-* in $target/agents"
+fi
 
 version="$(tr -d '[:space:]' < "$skill/VERSION")"
 echo
 echo "Installed model-grade $version in $skill"
-echo "Installed /mg alias in $target/skills/mg and executors mg-run-* in $target/agents"
+echo "Installed /mg alias in $target/skills/mg; $executors"
 echo
 echo "Open Claude Code and type:  /mg <a request>"
 echo "(the executors used by --run may take a couple of minutes or a new session to appear)"

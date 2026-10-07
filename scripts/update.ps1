@@ -56,14 +56,29 @@ Get-ChildItem -Path $skillsDir -Directory -Filter "model-grade.bak-*" | ForEach-
     Move-Item -Path $_.FullName -Destination (Join-Path $bakRoot $_.Name)
     Write-Host "leftover $($_.Name) moved to $bakRoot"
 }
-New-Item -ItemType Directory -Force -Path (Join-Path $skillsDir "mg"), $agentsDir | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $skillsDir "mg") | Out-Null
 Copy-Item -Path (Join-Path $skill "assets\mg\SKILL.md") -Destination (Join-Path $skillsDir "mg\SKILL.md") -Force
-Copy-Item -Path (Join-Path $skill "assets\agents\*.md") -Destination $agentsDir -Force
+# With .claude-plugin\plugin.json the skill folder loads as the plugin model-grade@skills-dir, which
+# registers the executors itself; copies in agents\ would list each one twice, so earlier copies move out.
+if (Test-Path (Join-Path $skill ".claude-plugin\plugin.json")) {
+    $old = Get-ChildItem (Join-Path $skill "assets\agents") -Filter "*.md" | ForEach-Object { Join-Path $agentsDir $_.Name } | Where-Object { Test-Path $_ }
+    if ($old) {
+        $bak = Join-Path $bakRoot ((Get-Date -Format "yyyyMMdd-HHmmss") + "-agents")
+        New-Item -ItemType Directory -Force -Path $bak | Out-Null
+        $old | ForEach-Object { Move-Item -Path $_ -Destination $bak }
+        Write-Host "executor copies from an earlier install moved to $bak"
+    }
+    $executors = "executors model-grade:mg-run-* load from the plugin manifest"
+} else {
+    New-Item -ItemType Directory -Force -Path $agentsDir | Out-Null
+    Copy-Item -Path (Join-Path $skill "assets\agents\*.md") -Destination $agentsDir -Force
+    $executors = "executors mg-run-* refreshed in $agentsDir"
+}
 
 $after = (Get-Content (Join-Path $skill "VERSION") -Raw).Trim()
 Write-Host ""
 Write-Host "model-grade $before -> $after   ($skill)"
-Write-Host "alias /mg and executors mg-run-* refreshed in $skillsDir\mg and $agentsDir"
+Write-Host "alias /mg refreshed in $skillsDir\mg; $executors"
 if (Test-Path (Join-Path $skill "CHANGELOG.md")) {
     Write-Host ""
     Get-Content (Join-Path $skill "CHANGELOG.md") -TotalCount 25
