@@ -22,7 +22,7 @@ Eval results land outside the repo in `../model-grade-workspace/iteration-N/` (s
 - A rubric change is not done until the evals ran: the with-rubric pass rate should stay at or near 100% and the no-rubric baseline clearly below it. Read any eval that moved before deciding the change is right.
 - `SKILL.md` runs on Sonnet 5 at medium effort (its frontmatter pins `claude-sonnet-5` by ID) and is loaded whole on every invocation. Keep it short; put reasoning in `references/`.
 - `references/docs-cache/` is generated and git-ignored. Never commit it, never edit it.
-- The `mg` alias lives at `assets/mg/SKILL.md` and the executors at `assets/agents/`; installers and `update` copy them out. Edit them here, not in `~/.claude`.
+- The `mg` alias lives at `assets/mg/SKILL.md` and the executors at `assets/agents/`; installers and `update` copy the alias out. The executors load through `.claude-plugin/plugin.json` (the skill folder is the plugin `model-grade@skills-dir`) and are copied to `~/.claude/agents/` only for a copy without that manifest. A new executor must be listed in the manifest; `check_repo.py` enforces it. Edit them here, not in `~/.claude`.
 - For a new model, follow `references/UPDATING.md` in order. Bump `VERSION` (and `.claude-plugin/plugin.json`) and add a `CHANGELOG.md` section in the same pull request; after it merges, tag `vX.Y.Z` on `main` and push the tag to release.
 - This folder is also the live installed skill (`~/.claude/skills/model-grade`), so the checked-out branch is what `/mg` runs. Return to `main` and pull after each merge; parallel work goes in a worktree outside `~/.claude/skills`.
 
