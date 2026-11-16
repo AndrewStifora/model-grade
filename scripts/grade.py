@@ -46,6 +46,7 @@ REFS = SKILL_DIR / "references"
 SCHEMA_PATH = HERE / "verdict_schema.json"
 
 GRADER_MODEL = "claude-sonnet-5"
+GRADER_EFFORT = "medium"  # assets/agents/mg-grade.md pins the same pair; check_repo.py compares them
 
 # The CLI returns the verdict through a StructuredOutput tool call and, when a call fails
 # the schema, lets the grader try again on the next turn. --max-turns N allows N calls; five
@@ -354,7 +355,7 @@ def grade(
     rubric: bool = True,
     backend: str = "auto",
     grader_model: str = GRADER_MODEL,
-    effort: str | None = "medium",
+    effort: str | None = GRADER_EFFORT,
     timeout: int = 600,
 ):
     """Grade a prompt. Returns (verdict, usage). Raises BackendError or InvalidVerdict."""
@@ -425,7 +426,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--context", help="extra context for the grader (repo size, session notes)")
     parser.add_argument("--backend", choices=["auto", "api", "cli"], default="auto")
     parser.add_argument("--grader-model", default=GRADER_MODEL, help=f"alias or model ID of the grader (default {GRADER_MODEL})")
-    parser.add_argument("--effort", default="medium", choices=EFFORTS, help="grader effort (default medium)")
+    parser.add_argument("--effort", default=GRADER_EFFORT, choices=EFFORTS, help=f"grader effort (default {GRADER_EFFORT})")
     parser.add_argument("--no-rubric", action="store_true", help="baseline grade without the rubric")
     parser.add_argument("--pretty", action="store_true", help="print the readable block instead of JSON")
     parser.add_argument("--usage", action="store_true", help="include token usage in the JSON output")
