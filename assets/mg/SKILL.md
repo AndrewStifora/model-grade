@@ -3,8 +3,6 @@ name: mg
 description: Shorthand for /model-grade. Grades a prompt and picks the cheapest Claude model and effort level that will complete it well; takes the same arguments as /model-grade.
 disable-model-invocation: true
 argument-hint: "[--run] [--json] <prompt text | @file>   (no arguments = grade the previous request)"
-model: sonnet
-effort: medium
 allowed-tools: Skill(model-grade), Read, Glob, Grep
 ---
 
