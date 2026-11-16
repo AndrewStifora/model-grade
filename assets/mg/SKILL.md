@@ -8,4 +8,4 @@ allowed-tools: Skill(model-grade), Read, Glob, Grep
 
 This is an alias for the model-grade skill. Arguments passed to it: $ARGUMENTS
 
-Invoke the model-grade skill now with the Skill tool (skill `model-grade`, args exactly as given above) and follow its instructions to the letter. If the arguments line above is empty or still reads `$ARGUMENTS`, pass no arguments, and model-grade grades the previous request as usual.
+Invoke the model-grade skill now with the Skill tool (skill `model-grade`, args exactly as given above) and follow its instructions to the letter. If the arguments line above ends at the colon, or still shows the unfilled placeholder instead of real arguments, pass no arguments, and model-grade grades the previous request as usual.

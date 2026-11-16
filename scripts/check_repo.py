@@ -114,6 +114,10 @@ check(fm.get("name") == "model-grade", "SKILL.md: name must be model-grade")
 check(bool(fm.get("description")), "SKILL.md: description missing")
 fm = frontmatter(ROOT / "assets" / "mg" / "SKILL.md")
 check(fm.get("name") == "mg", "assets/mg/SKILL.md: name must be mg")
+# Claude Code replaces every $ARGUMENTS in a skill, so a second copy echoes the arguments into
+# whatever sentence holds it; the fallback that tested for "no arguments" once matched every call (#21).
+alias_text = (ROOT / "assets" / "mg" / "SKILL.md").read_text(encoding="utf-8")
+check(alias_text.count("$ARGUMENTS") == 1, "assets/mg/SKILL.md: $ARGUMENTS must appear exactly once")
 agents = sorted((ROOT / "assets" / "agents").glob("*.md"))
 executors = [a for a in agents if a.stem.startswith("mg-run-")]
 check(len(executors) >= 7, f"expected at least seven executor definitions, found {len(executors)}")
