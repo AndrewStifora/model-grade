@@ -10,6 +10,7 @@ python evals/run_evals.py --workers 3        # grades all evals with and without
 python evals/run_evals.py --ids 4,9,17 --runs 2 --configs with_skill --no-viewer   # a cheap spot check
 python scripts/refresh_docs.py               # report NEW and CHANGED Anthropic pages (exit 3 = something to read)
 python scripts/refresh_docs.py --write       # accept the current pages into sources.json after the rubric caught up
+python scripts/check_quotes.py               # every quoted docs passage still appears in the cached pages (needs the cache)
 python scripts/build_package.py --out dist/model-grade-install.zip
 ```
 
@@ -21,7 +22,7 @@ Eval results land outside the repo in `../model-grade-workspace/iteration-N/` (s
 - The verdict schema (`scripts/verdict_schema.json`), the grader's maps (`ALIAS_TO_ID`, `ID_TO_ALIAS`, `TIER`, `DISPLAY` in `scripts/grade.py`), the executor definitions in `assets/agents/`, and the eval labels in `evals/evals.json` must name the same models. `check_repo.py` enforces it.
 - A rubric change is not done until the evals ran: the with-rubric pass rate should stay at or near 100% and the no-rubric baseline clearly below it. Read any eval that moved before deciding the change is right.
 - `SKILL.md` runs on the session's own model and is loaded whole on every invocation. Keep it short; put reasoning in `references/`. Never give it, or the `mg` alias, a `model:` or `effort:` field: without `context: fork` that switches the invoking turn inline and writes the whole conversation to another model's prompt cache, and `context: fork` cannot see the conversation that `/mg` with no arguments grades.
-- Grading happens in the `mg-grade` subagent (`assets/agents/mg-grade.md`), pinned to `claude-sonnet-5` at medium effort. Its pin, `GRADER_MODEL` and `GRADER_EFFORT` in `scripts/grade.py`, and the evals must name the same grader; `check_repo.py` enforces the first two.
+- Grading happens in the `mg-grade` subagent (`assets/agents/mg-grade.md`), pinned to `claude-haiku-5-5` at medium effort. Its pin, `GRADER_MODEL` and `GRADER_EFFORT` in `scripts/grade.py`, and the evals must name the same grader; `check_repo.py` enforces the first two.
 - `references/docs-cache/` is generated and git-ignored. Never commit it, never edit it.
 - The `mg` alias lives at `assets/mg/SKILL.md` and the grader and executors at `assets/agents/`; installers and `update` copy the alias out. The agents load through `.claude-plugin/plugin.json` (the skill folder is the plugin `model-grade@skills-dir`) and are copied to `~/.claude/agents/` only for a copy without that manifest. A new agent must be listed in the manifest; `check_repo.py` enforces it. Edit them here, not in `~/.claude`.
 - For a new model, follow `references/UPDATING.md` in order. Bump `VERSION` (and `.claude-plugin/plugin.json`) and add a `CHANGELOG.md` section in the same pull request; after it merges, tag `vX.Y.Z` on `main` and push the tag to release.
