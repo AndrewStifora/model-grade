@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 (2026-11-16)
+
+- `graphify-out/`, the knowledge graph `/graphify` writes into a repository, no longer leaks into commits or local zips (#19). It is now in `.gitignore`, and `scripts/build_package.py` skips it, so a transfer zip rebuilt from the live clone at `~/.claude/skills/model-grade` leaves the graph out. The release zip was never affected: CI builds it from a clean checkout. Nothing the skill does changed.
+
 ## 1.5.0 (2026-11-15)
 
 - Claude Fable 5.2 replaces Fable 5.1 as the tier-3 model (`claude-fable-5-2`, $8 / $40 per million tokens, down from $10 / $50), and Claude Haiku 5.5 replaces Haiku 4.5 at tier 0 (`claude-haiku-5-5`, $0.10 / $0.50 for prompts up to 100K tokens, $0.50 / $2.50 beyond; 1M context; effort levels, default medium). Both old models are now legacy and are no longer routed to. Sonnet 5 and Opus 5 stay as the fallbacks.

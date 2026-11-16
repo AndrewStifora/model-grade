@@ -6,7 +6,7 @@
 
 The zip is what INSTALL.md's drag-and-drop route and the update scripts consume: one
 top-level folder containing SKILL.md. It leaves out .git, .github, .githooks, .claude
-(desktop-app worktrees), docs, caches, and dist.
+(desktop-app worktrees), docs, caches, dist, and graphify-out (the /graphify graph).
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", ".github", ".githooks", ".claude", "__pycache__", "docs-cache", "docs", "dist"}
+SKIP_DIRS = {".git", ".github", ".githooks", ".claude", "__pycache__", "docs-cache", "docs", "dist", "graphify-out"}
 
 
 def build(out: Path, top: str) -> int:

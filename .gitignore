@@ -6,3 +6,6 @@ dist/
 
 # Claude desktop app session worktrees
 .claude/worktrees/
+
+# Knowledge graph written by /graphify
+graphify-out/
