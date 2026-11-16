@@ -3,9 +3,9 @@
 
 Compiles the scripts, validates every JSON file, and cross-checks the pieces that
 must agree with each other: the eval labels against the verdict schema's model and
-effort lists, the grader's model maps against the schema, the executor definitions
-against their file names and the plugin manifest, and VERSION against CHANGELOG.md
-and the manifest. Exit 0 when everything
+effort lists, the grader's model maps against the schema, the agent definitions
+against their file names and the plugin manifest, the grader agent's pin against the
+script's, and VERSION against CHANGELOG.md and the manifest. Exit 0 when everything
 passes, 1 otherwise. The validate and release workflows run it; run it yourself
 before committing a rubric or schema change.
 """
@@ -96,19 +96,38 @@ if evals:
         for d in expected.get("dependencies", []):
             check(d in deps, f"eval {e['id']}: unknown dependency {d}")
 
-# 5. Skill, alias, and executor frontmatter.
+# 5. Skill, alias, and agent frontmatter.
+# A model or effort pin on a skill without `context: fork` switches the invoking turn inline,
+# which writes the whole conversation to another model's prompt cache (#14, #16). The grader's
+# pin lives on the mg-grade agent instead.
+for skill_md in (ROOT / "SKILL.md", ROOT / "assets" / "mg" / "SKILL.md"):
+    fm = frontmatter(skill_md)
+    for key in ("model", "effort"):
+        check(key not in fm, f"{skill_md.relative_to(ROOT)}: frontmatter must not pin {key}")
 fm = frontmatter(ROOT / "SKILL.md")
 check(fm.get("name") == "model-grade", "SKILL.md: name must be model-grade")
 check(bool(fm.get("description")), "SKILL.md: description missing")
 fm = frontmatter(ROOT / "assets" / "mg" / "SKILL.md")
 check(fm.get("name") == "mg", "assets/mg/SKILL.md: name must be mg")
 agents = sorted((ROOT / "assets" / "agents").glob("*.md"))
-check(len(agents) >= 7, f"expected at least seven executor definitions, found {len(agents)}")
+executors = [a for a in agents if a.stem.startswith("mg-run-")]
+check(len(executors) >= 7, f"expected at least seven executor definitions, found {len(executors)}")
 for agent in agents:
     fm = frontmatter(agent)
     check(fm.get("name") == agent.stem, f"{agent.name}: frontmatter name differs from file name")
     check(fm.get("effort") in efforts, f"{agent.name}: effort {fm.get('effort')!r} is not a known level")
-# Installs get the executors only through the plugin manifest, so it must register every one.
+# The grader agent must be the grader the script and the evals use.
+grader_md = ROOT / "assets" / "agents" / "mg-grade.md"
+check(grader_md.exists(), "assets/agents/mg-grade.md is missing")
+if grader_md.exists():
+    fm = frontmatter(grader_md)
+    try:
+        check(fm.get("model") == grade.GRADER_MODEL, f"mg-grade.md: model {fm.get('model')!r} differs from grade.GRADER_MODEL {grade.GRADER_MODEL!r}")
+        check(fm.get("effort") == grade.GRADER_EFFORT, f"mg-grade.md: effort {fm.get('effort')!r} differs from grade.GRADER_EFFORT {grade.GRADER_EFFORT!r}")
+    except NameError:
+        pass  # the import failure is already reported above
+    check("Agent" not in fm.get("tools", ""), "mg-grade.md: the grader must not be able to spawn subagents")
+# Installs get the agents only through the plugin manifest, so it must register every one.
 plugin = load_json(ROOT / ".claude-plugin" / "plugin.json")
 if plugin:
     listed = sorted(Path(p).name for p in plugin.get("agents", []))
@@ -133,4 +152,4 @@ if errors:
     for message in errors:
         print(" -", message)
     sys.exit(1)
-print(f"OK: {len(agents)} executors, {len(evals['evals']) if evals else 0} evals, version {version}")
+print(f"OK: grader + {len(executors)} executors, {len(evals['evals']) if evals else 0} evals, version {version}")

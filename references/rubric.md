@@ -39,7 +39,7 @@ Read the prompt (and any attached files or conversation context) and score these
 
 ## 1b. What the prompt depends on
 
-The prompt rarely says what the executor will have to load and do, and that is where hidden complexity lives. Check these before scoring. In a session you can look: the skills list, the tool list, the working directory, the conversation. Through the API script you only have `<context>`, so say in `notes` when you are guessing.
+The prompt rarely says what the executor will have to load and do, and that is where hidden complexity lives. Check these before scoring. You grade in a context of your own, so you cannot look at the session yourself: the skill that called you, or whoever runs the script, describes it in `<context>` (the skill that would trigger, the tools, the project, the conversation). That block is all you have, so say in `notes` when it leaves you guessing. The model you run on is the grader's, not the session's: take the session's model from `<context>`, and when it is not named there, do not assume one.
 
 **A skill would run.** Read its description and frontmatter, which is cheap, not the whole skill.
 
