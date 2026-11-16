@@ -45,6 +45,14 @@ def display(model_id: str) -> str:
     return grader.DISPLAY.get(model_id, model_id)
 
 
+def effort_label(expected: dict) -> str:
+    """`effort_ok` is a list for every expected model, or a dict of lists keyed by model ID."""
+    effort_ok = expected.get("effort_ok", [])
+    if isinstance(effort_ok, dict):
+        return "; ".join(f"{display(m)} @ {'/'.join(levels)}" for m, levels in effort_ok.items())
+    return "/".join(str(e) for e in effort_ok)
+
+
 # ---------------------------------------------------------------- scoring
 
 def score(verdict: dict, expected: dict) -> list[dict]:
@@ -62,18 +70,23 @@ def score(verdict: dict, expected: dict) -> list[dict]:
 
     # Effort is judged relative to the expected model. One tier up needs no more
     # effort than expected; one tier down needs at least the expected floor.
-    ranks = sorted(EFFORT_RANK[e] for e in effort_ok)
+    if isinstance(effort_ok, dict):  # acceptable levels differ per expected model
+        for_model = effort_ok.get(model, [])
+        every = sorted({e for levels in effort_ok.values() for e in levels}, key=EFFORT_RANK.get)
+    else:
+        for_model = every = effort_ok
+    ranks = sorted(EFFORT_RANK[e] for e in every)
     if exact:
-        effort_pass = effort in effort_ok
-        effort_note = f"acceptable for {display(exp_models[0])}: {effort_ok}"
+        effort_pass = effort in for_model
+        effort_note = f"acceptable for {display(model)}: {for_model}"
     elif within and ranks:
         nearest = min(exp_tiers, key=lambda t: abs(t - tier))
         if tier > nearest:
             effort_pass = EFFORT_RANK[effort] <= ranks[-1]
-            effort_note = f"one tier up, so effort must be at most {effort_ok[-1]}"
+            effort_note = f"one tier up, so effort must be at most {every[-1]}"
         else:
             effort_pass = EFFORT_RANK[effort] >= ranks[0]
-            effort_note = f"one tier down, so effort must be at least {effort_ok[0]}"
+            effort_note = f"one tier down, so effort must be at least {every[0]}"
     else:
         effort_pass = False
         effort_note = "model is more than one tier from expected, effort not comparable"
@@ -90,7 +103,7 @@ def score(verdict: dict, expected: dict) -> list[dict]:
             "evidence": evidence + f"; expected tier(s) {exp_tiers}, got tier {tier}",
         },
         {
-            "text": f"Effort is acceptable ({', '.join(str(e) for e in effort_ok)})",
+            "text": f"Effort is acceptable ({effort_label(expected)})",
             "passed": bool(effort_pass),
             "evidence": evidence + "; " + effort_note,
         },
@@ -120,7 +133,7 @@ def failed_expectations(expected: dict, reason: str) -> list[dict]:
     texts = [
         f"Picks {' or '.join(display(m) for m in expected['models'])}",
         "Model is within one tier of the expected model",
-        f"Effort is acceptable ({', '.join(str(e) for e in expected.get('effort_ok', []))})",
+        f"Effort is acceptable ({effort_label(expected)})",
         "Avoids forbidden models",
         "Gives escalation triggers, or is already at the top tier",
     ]
@@ -208,7 +221,7 @@ def write_summary(results: list[dict], iter_dir: Path, evals: list[dict]) -> str
     totals = {c: [0, 0] for c in configs}
     for ev in evals:
         exp = ev["expected"]
-        exp_txt = f"{'/'.join(display(m) for m in exp['models'])} @ {'/'.join(str(e) for e in exp.get('effort_ok', []))}"
+        exp_txt = effort_label(exp) if isinstance(exp.get('effort_ok'), dict) else f"{'/'.join(display(m) for m in exp['models'])} @ {effort_label(exp)}"
         cells = []
         for c in configs:
             parts = []

@@ -91,7 +91,12 @@ if evals:
         check(bool(expected.get("models")), f"eval {e['id']}: no expected models")
         for m in expected.get("models", []) + expected.get("forbid_models", []):
             check(m in models, f"eval {e['id']}: unknown model {m}")
-        for ef in expected.get("effort_ok", []):
+        effort_ok = expected.get("effort_ok", [])
+        if isinstance(effort_ok, dict):  # per-model lists
+            check(set(effort_ok) == set(expected.get("models", [])), f"eval {e['id']}: effort_ok keys differ from models")
+            effort_ok = [ef for levels in effort_ok.values() for ef in levels]
+        check(bool(effort_ok), f"eval {e['id']}: no acceptable effort")
+        for ef in effort_ok:
             check(ef in efforts, f"eval {e['id']}: unknown effort {ef!r}")
         for d in expected.get("dependencies", []):
             check(d in deps, f"eval {e['id']}: unknown dependency {d}")

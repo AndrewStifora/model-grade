@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """model-grade: pick the cheapest Claude model and effort level for a prompt.
 
-The grader is Claude Sonnet 5 at medium effort, pinned by model ID so a Claude
+The grader is Claude Haiku 5.5 at medium effort, pinned by model ID so a Claude
 Code alias move cannot change it (override with --grader-model / --effort; the
-evals were calibrated on this grader). It reads the rubric and model profiles from ../references, grades the
-prompt, and returns a verdict that validates against verdict_schema.json.
+evals were calibrated on this grader). It reads the rubric and model profiles
+from ../references, grades the prompt, and returns a verdict that validates
+against verdict_schema.json.
 
 Backends
   api  Claude API through the anthropic SDK. Needs `pip install anthropic` and a
@@ -45,7 +46,7 @@ SKILL_DIR = HERE.parent
 REFS = SKILL_DIR / "references"
 SCHEMA_PATH = HERE / "verdict_schema.json"
 
-GRADER_MODEL = "claude-sonnet-5"
+GRADER_MODEL = "claude-haiku-5-5"
 GRADER_EFFORT = "medium"  # assets/agents/mg-grade.md pins the same pair; check_repo.py compares them
 
 # The CLI returns the verdict through a StructuredOutput tool call and, when a call fails
@@ -56,33 +57,36 @@ CLI_MAX_TURNS = 5
 # the same invalid call does not recover with more turns, but a fresh session usually does.
 CLI_RETRIES_EXHAUSTED = ("error_max_turns", "error_max_structured_output_retries")
 
-# Each alias maps to its tier's current model. The Claude Code `sonnet` alias resolves
-# to Sonnet 5.5 from v2.1.284 (Sonnet 5 before), so the grader and fallback are pinned by ID.
+# Each alias maps to its tier's current model. Claude Code moved the aliases at different
+# versions (opus 2.1.280, sonnet 2.1.284, haiku 2.1.293, fable 2.1.321), so the grader and
+# the fallbacks are pinned by ID.
 ALIAS_TO_ID = {
-    "haiku": "claude-haiku-4-5",
+    "haiku": "claude-haiku-5-5",
     "sonnet": "claude-sonnet-5-5",
-    "opus": "claude-opus-5-5",  # the Claude Code alias resolves to Opus 5.5 from v2.1.280
-    "fable": "claude-fable-5-1",
+    "opus": "claude-opus-5-5",
+    "fable": "claude-fable-5-2",
 }
+# Legacy models a caller may still name as the grader; they reject the effort parameter.
+NO_EFFORT_MODELS = {"claude-haiku-4-5"}
 ID_TO_ALIAS = {
-    "claude-haiku-4-5": "haiku",
+    "claude-haiku-5-5": "haiku",
     "claude-sonnet-5-5": "sonnet",
     "claude-sonnet-5": "sonnet",  # fallback model in the Sonnet tier; pin by ID where the alias must not move
     "claude-opus-5-5": "opus",
     "claude-opus-5": "opus",  # fallback model in the Opus tier; pin by ID where the alias must not move
-    "claude-fable-5-1": "fable",
+    "claude-fable-5-2": "fable",
 }
 TIER = {
-    "claude-haiku-4-5": 0, "claude-sonnet-5-5": 1, "claude-sonnet-5": 1,
-    "claude-opus-5-5": 2, "claude-opus-5": 2, "claude-fable-5-1": 3,
+    "claude-haiku-5-5": 0, "claude-sonnet-5-5": 1, "claude-sonnet-5": 1,
+    "claude-opus-5-5": 2, "claude-opus-5": 2, "claude-fable-5-2": 3,
 }
 DISPLAY = {
-    "claude-haiku-4-5": "Haiku 4.5",
+    "claude-haiku-5-5": "Haiku 5.5",
     "claude-sonnet-5-5": "Sonnet 5.5",
     "claude-sonnet-5": "Sonnet 5",
     "claude-opus-5-5": "Opus 5.5",
     "claude-opus-5": "Opus 5",
-    "claude-fable-5-1": "Fable 5.1",
+    "claude-fable-5-2": "Fable 5.2",
 }
 EFFORTS = ["low", "medium", "high", "xhigh", "max"]
 
@@ -95,10 +99,10 @@ SYSTEM_PROMPT = (
 
 BASELINE_INSTRUCTIONS = (
     "Choose which Claude model and effort level should run the prompt below.\n"
-    "Models, cheapest first: claude-haiku-4-5 (tier 0, alias haiku; it has no effort "
-    "parameter, so effort must be null), claude-sonnet-5-5 (tier 1, alias sonnet), "
+    "Models, cheapest first: claude-haiku-5-5 (tier 0, alias haiku), "
+    "claude-sonnet-5-5 (tier 1, alias sonnet), "
     "claude-sonnet-5 (tier 1, previous generation, alias sonnet), claude-opus-5-5 (tier 2, alias opus), claude-opus-5 (tier 2, previous generation, "
-    "alias opus), claude-fable-5-1 (tier 3, alias fable, the most capable and most "
+    "alias opus), claude-fable-5-2 (tier 3, alias fable, the most capable and most "
     "expensive). Effort levels: low, medium, high, xhigh, max.\n"
     "Pick the cheapest pair you expect to complete the task well. Fill every field of "
     "the schema; use your own judgment for the signal scores (0 to 3) and categories."
@@ -162,7 +166,7 @@ def grade_api(task_msg: str, grading_ctx: str, grader_model: str, effort: str | 
 
     client = anthropic.Anthropic()
     output_config: dict = {"format": {"type": "json_schema", "schema": load_schema()}}
-    if effort and grader_model != "claude-haiku-4-5":
+    if effort and grader_model not in NO_EFFORT_MODELS:
         output_config["effort"] = effort
     cache_control: dict = {"type": "ephemeral"}
     if os.environ.get("MODEL_GRADE_CACHE_TTL") == "1h":
@@ -244,7 +248,7 @@ def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int
         "--json-schema", json.dumps(load_schema()),
         "--max-turns", str(CLI_MAX_TURNS),
     ]
-    if effort and grader_model != "claude-haiku-4-5":
+    if effort and grader_model not in NO_EFFORT_MODELS:
         cmd += ["--effort", effort]
     started = time.time()
     sessions = []
@@ -292,16 +296,11 @@ def grade_cli(user_msg: str, grader_model: str, effort: str | None, timeout: int
 # ---------------------------------------------------------------- validation
 
 def normalize(verdict: dict) -> dict:
-    """Derive alias and tier from model, and null the effort for Haiku."""
+    """Derive alias and tier from model."""
     model = verdict.get("model")
     if model in TIER:
         verdict["alias"] = ID_TO_ALIAS[model]
         verdict["tier"] = TIER[model]
-        if model == "claude-haiku-4-5":
-            verdict["effort"] = None
-    alt = verdict.get("cheaper_alternative")
-    if isinstance(alt, dict) and alt.get("model") == "claude-haiku-4-5":
-        alt["effort"] = None
     return verdict
 
 
@@ -314,13 +313,8 @@ def validate(verdict: dict) -> list[str]:
     model = verdict.get("model")
     if model not in TIER:
         errors.append(f"unknown model: {model!r}")
-    else:
-        effort = verdict.get("effort")
-        if model == "claude-haiku-4-5":
-            if effort is not None:
-                errors.append("haiku has no effort parameter; effort must be null")
-        elif effort not in EFFORTS:
-            errors.append(f"invalid effort: {effort!r}")
+    elif verdict.get("effort") not in EFFORTS:
+        errors.append(f"invalid effort: {verdict.get('effort')!r}")
     conf = verdict.get("confidence")
     if not isinstance(conf, (int, float)) or not 0 <= conf <= 1:
         errors.append(f"confidence out of range: {conf!r}")
@@ -339,7 +333,7 @@ def validate(verdict: dict) -> list[str]:
     if alt is not None:
         if not isinstance(alt, dict) or alt.get("model") not in TIER:
             errors.append("cheaper_alternative must be null or an object with a valid model")
-        elif alt["model"] != "claude-haiku-4-5" and alt.get("effort") not in EFFORTS:
+        elif alt.get("effort") not in EFFORTS:
             errors.append("cheaper_alternative.effort invalid")
     for key in ("escalate_if", "notes"):
         if not isinstance(verdict.get(key), list):

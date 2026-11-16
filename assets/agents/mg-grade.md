@@ -1,7 +1,7 @@
 ---
 name: mg-grade
-description: Grader for the /model-grade skill only. Grades one prompt against the model-grade rubric and returns the verdict as JSON. Pinned to claude-sonnet-5 at medium effort, the grader the evals are calibrated on. Do not pick this agent for ordinary delegation; use general-purpose instead.
-model: claude-sonnet-5
+description: Grader for the /model-grade skill only. Grades one prompt against the model-grade rubric and returns the verdict as JSON. Pinned to claude-haiku-5-5 at medium effort, the grader the evals are calibrated on. Do not pick this agent for ordinary delegation; use general-purpose instead.
+model: claude-haiku-5-5
 effort: medium
 tools: Read, Glob, Grep
 omitClaudeMd: true
