@@ -38,9 +38,9 @@ Notes:
 - Nothing else is needed. Python is only used by the optional `scripts/grade.py`, the evals, and `/mg refresh`.
 - Skills appear immediately. The `model-grade:mg-grade` grader and the `model-grade:mg-run-*` executors used by `--run` can take a couple of minutes or a new session to show up; until then a grade runs on your session model.
 - Leave `model-grade` enabled in `/plugin`: Claude Code loads the skill folder as the plugin `model-grade@skills-dir`, and disabling it also removes `/model-grade` and `/mg`.
-- The grade itself runs in a small subagent on Sonnet 5 at medium effort, so it costs cents and your conversation stays on its own model. In an interactive session the verdict arrives a few seconds after you send `/mg`, because Claude Code runs subagents in the background.
-- If your plan does not include one of the models (Haiku 4.5, Sonnet 5.5, Opus 5.5, Fable 5.1), say so in the request, for example "no Fable access", and the grader caps its verdict accordingly.
-- Opus 5.5 needs Claude Code 2.1.280 or later for the `opus` alias to reach it; run `claude update` if `/mg version` or a `--run` says the alias still resolves to Opus 5.
+- The grade itself runs in a small subagent on Haiku 5.5 at medium effort, so it costs about half a cent and your conversation stays on its own model. In an interactive session the verdict arrives a few seconds after you send `/mg`, because Claude Code runs subagents in the background.
+- If your plan does not include one of the models (Haiku 5.5, Sonnet 5.5, Opus 5.5, Fable 5.2), say so in the request, for example "no Fable access", and the grader caps its verdict accordingly.
+- The model aliases reach all four current models from Claude Code 2.1.321; run `claude update` if `/mg version` or a `--run` says an alias still resolves to an earlier model.
 
 ---
 

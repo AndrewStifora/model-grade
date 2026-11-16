@@ -1,6 +1,6 @@
 # Keeping model-grade current when Anthropic ships a model
 
-The skill is only as good as its picture of the model lineup. This is the maintainer's checklist. Steps 1 and 2 are automated; the rest is judgment, so do it in a session on a strong model (Opus or Fable), not in the Sonnet turn the skill itself runs on.
+The skill is only as good as its picture of the model lineup. This is the maintainer's checklist. Steps 1 and 2 are automated; the rest is judgment, so do it in a session on a strong model (Opus or Fable), not from a quick `/mg refresh` turn.
 
 ## 1. Detect
 
@@ -12,7 +12,7 @@ Reports NEW pages (a new model's prompting page, overview, or what's-new page ap
 
 ## 2. Read
 
-For a new model, read its prompting page, its overview (ID, price, context, output limit, default effort, thinking mode), and its what's-new page (breaking API changes, classifiers, fallback). For a changed page, read the diff. Write down, in one line each: what the model is documented to be best at, how its effort levels compare to the previous model in its tier, what it refuses, and what it costs.
+For a new model, read its prompting page, its overview (ID, price, context, output limit, default effort, thinking mode), and its what's-new page (breaking API changes, classifiers, fallback). Then read what Optimizing for cost and intelligence measured for it: cost per solved task by effort level, and how it compares with the tier below at higher effort. A new model does not always win its tier's old workloads (Fable 5.2 lost the research comparison that Fable 5.1 had won), so let the measurements move rules, not the release notes. For a changed page, read the diff. Write down, in one line each: what the model is documented to be best at, how its effort levels compare to the previous model in its tier, what it refuses, and what it costs.
 
 ## 3. Decide the tier
 
@@ -31,14 +31,18 @@ Ask, in this order:
 5. `assets/agents/`: add a pinned executor only if the Claude Code alias does not resolve to the model yet (check with `claude -p "OK" --model <alias> --output-format json` and read `modelUsage`).
 6. `evals/evals.json`: update `models` and `effort_ok` for the affected tier; add one eval for anything the docs say the model is newly good at.
 7. `SKILL.md` description and `README.md` model list, `references/sources.md`, `CHANGELOG.md`, `VERSION`.
-8. `CLAUDE_CODE_VERSION`: when a Claude Code release moves an alias the rubric routes to (its changelog says so, as 2.1.280 did for `opus` and 2.1.284 for `sonnet`), set it to that version. `update` and `version` compare it with `claude --version` and recommend `claude update` to anyone older.
+8. `CLAUDE_CODE_VERSION`: when a Claude Code release moves an alias the rubric routes to (the version history table on its model configuration page says so, as 2.1.293 did for `haiku` and 2.1.321 for `fable`), set it to that version. `update` and `version` compare it with `claude --version` and recommend `claude update` to anyone older.
+9. If the grader itself should change, change `GRADER_MODEL` and `GRADER_EFFORT` in `scripts/grade.py` and the pin in `assets/agents/mg-grade.md` together, and only after a full eval pass on the candidate (`--grader-model <id> --effort <level>`) scores at or near 100% with the rubric.
 
 ## 5. Verify and publish
 
 ```
 python scripts/refresh_docs.py --write
+python scripts/check_quotes.py
 python evals/run_evals.py --workers 3
 ```
+
+`check_quotes.py` lists every quoted passage that no longer appears in the cached pages. Anthropic rewords pages between releases, so expect a few after any refresh: find the current sentence, and if the fact itself is gone, remove the rule that rested on it.
 
 The with-rubric pass rate should stay at or near 100% and the no-rubric baseline should stay clearly below it; read any eval that moved. Then open a pull request for the change (issue first, branch `feat/<issue>-<model>`). Once CI is green and it is merged, tag `main` with the version and push the tag: `git switch main`, `git pull`, `git tag v1.2.0`, `git push origin v1.2.0`. The release workflow publishes the zip; tell users to run `/mg update`.
 

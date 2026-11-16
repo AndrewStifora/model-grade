@@ -1,6 +1,6 @@
 ---
 name: mg-run-sonnet5
-description: Executor for the /model-grade skill only. Runs a prompt that model-grade routed specifically to Claude Sonnet 5 (not 5.5), usually because the work could trip Sonnet 5.5's cyber, bio, frontier-LLM, or general-harms classifiers, or needs forced tool use or thinking disabled. Pinned to claude-sonnet-5 at high effort. Do not pick this agent for ordinary delegation; use general-purpose instead.
+description: Executor for the /model-grade skill only. Runs a prompt that model-grade routed specifically to Claude Sonnet 5 (not 5.5), usually because the work could trip the cyber, bio, frontier-LLM, or general-harms classifiers on Sonnet 5.5 or Haiku 5.5, or needs forced tool use or thinking disabled. Pinned to claude-sonnet-5 at high effort. Do not pick this agent for ordinary delegation; use general-purpose instead.
 model: claude-sonnet-5
 effort: high
 ---

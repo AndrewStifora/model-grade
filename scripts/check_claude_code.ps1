@@ -21,7 +21,7 @@ try {
     $have = $Matches[1]
     if ([version]$have -lt [version]$want) {
         Write-Host "Claude Code $have is older than $want, the version this model-grade release is built for. Run 'claude update'."
-        Write-Host "Older versions can resolve the model aliases (sonnet, opus) to earlier models than the ones the rubric routes to, so --run may not get the model its verdict names."
+        Write-Host "Older versions can resolve the model aliases (haiku, sonnet, opus, fable) to earlier models than the ones the rubric routes to, so --run may not get the model its verdict names."
     } else {
         Write-Host "Claude Code $have (model-grade is built for $want or later): ok"
     }

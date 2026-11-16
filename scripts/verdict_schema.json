@@ -3,7 +3,7 @@
   "properties": {
     "model": {
       "type": "string",
-      "enum": ["claude-haiku-4-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]
+      "enum": ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-2"]
     },
     "alias": {
       "type": "string",
@@ -11,8 +11,8 @@
     },
     "tier": {"type": "integer", "minimum": 0, "maximum": 3},
     "effort": {
-      "type": ["string", "null"],
-      "enum": ["low", "medium", "high", "xhigh", "max", null]
+      "type": "string",
+      "enum": ["low", "medium", "high", "xhigh", "max"]
     },
     "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     "signals": {
@@ -45,8 +45,8 @@
     "cheaper_alternative": {
       "type": ["object", "null"],
       "properties": {
-        "model": {"type": "string", "enum": ["claude-haiku-4-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-1"]},
-        "effort": {"type": ["string", "null"], "enum": ["low", "medium", "high", "xhigh", "max", null]},
+        "model": {"type": "string", "enum": ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-sonnet-5", "claude-opus-5-5", "claude-opus-5", "claude-fable-5-2"]},
+        "effort": {"type": "string", "enum": ["low", "medium", "high", "xhigh", "max"]},
         "when": {"type": "string"}
       },
       "required": ["model", "effort", "when"],

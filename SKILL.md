@@ -1,6 +1,6 @@
 ---
 name: model-grade
-description: Grade a prompt and pick the cheapest Claude model and effort level that will complete it well (Haiku 4.5, Sonnet 5.5, Opus 5.5, or Fable 5.1 at low to max effort, with Sonnet 5 and Opus 5 as classifier fallbacks), so an expensive model is never committed to work that does not need it. Use this whenever the user asks which model to use, whether a task needs Opus or Fable, how to save tokens or cost on a job, wants a prompt routed or delegated to a cheaper model, or types /model-grade. Also reach for it before delegating substantial work to a subagent when the user cares about cost. The optional --run flag executes the prompt on the chosen model. Subcommands update, version, and refresh maintain the skill itself.
+description: Grade a prompt and pick the cheapest Claude model and effort level that will complete it well (Haiku 5.5, Sonnet 5.5, Opus 5.5, or Fable 5.2 at low to max effort, with Sonnet 5 and Opus 5 as classifier fallbacks), so an expensive model is never committed to work that does not need it. Use this whenever the user asks which model to use, whether a task needs Opus or Fable, how to save tokens or cost on a job, wants a prompt routed or delegated to a cheaper model, or types /model-grade. Also reach for it before delegating substantial work to a subagent when the user cares about cost. The optional --run flag executes the prompt on the chosen model. Subcommands update, version, and refresh maintain the skill itself.
 argument-hint: "[--run] [--json] <prompt text | @file> | update | version | refresh   (no arguments = grade the previous request)"
 allowed-tools: Read, Glob, Grep
 ---
@@ -9,7 +9,7 @@ allowed-tools: Read, Glob, Grep
 
 Decide which Claude model and effort level a prompt deserves, then report it, or run the prompt there.
 
-This skill runs on the session's own model, so the conversation's prompt cache stays warm, and it hands the grading to the `mg-grade` subagent. That agent is pinned to Sonnet 5 at medium effort, by model ID, so a Claude Code alias move cannot swap in a grader the evals were not calibrated on. Your part is to work out what is being graded, describe the session the grader cannot see, and report its verdict.
+This skill runs on the session's own model, so the conversation's prompt cache stays warm, and it hands the grading to the `mg-grade` subagent. That agent is pinned to Haiku 5.5 at medium effort, by model ID, so a Claude Code alias move cannot swap in a grader the evals were not calibrated on. Your part is to work out what is being graded, describe the session the grader cannot see, and report its verdict.
 
 ## 1. Parse the invocation
 
@@ -56,7 +56,7 @@ Write `none` where a line does not apply.
 
 The grader returns the verdict as one JSON object. If the Agent tool says the grader is running in the background, tell the user in one line that the grade is on its way, and report when its result arrives.
 
-If the Agent tool lists the grader under neither name (Claude Code picks up new agent definitions after a short delay or in a new session), or the grader says it could not read the rubric, grade inline instead: read `references/rubric.md`, follow it in order, and say that this grade ran on the session model rather than the pinned grader.
+If the Agent tool lists the grader under neither name (Claude Code picks up new agent definitions after a short delay or in a new session), or the grader comes back without a verdict (it could not read the rubric, or its safety classifiers declined a prompt about security or biology), grade inline instead: read `references/rubric.md`, follow it in order, and say that this grade ran on the session model rather than the pinned grader.
 
 ## 3. Report
 
@@ -81,8 +81,8 @@ If you are grading a request the user is about to make in this session, end with
 
 Delegate with the Agent tool:
 
-- `subagent_type`: `mg-run-<effort>` for Sonnet, Opus, and Fable verdicts. These executors pin the effort level: `mg-run-low`, `mg-run-medium`, `mg-run-high`, `mg-run-xhigh`, `mg-run-max`. Like the grader, they normally carry the plugin prefix, `model-grade:mg-run-<effort>`; a copy without the manifest has them unprefixed in `~/.claude/agents/`. Use whichever name the Agent tool lists, here and for every `mg-run-*` name below. For a Haiku verdict use `general-purpose` (Haiku has no effort parameter).
-- `model`: the verdict's alias (`haiku`, `sonnet`, `opus`, or `fable`). Always pass it; the executors declare `model: inherit` and rely on this override. The `opus` alias resolves to Opus 5.5 on Claude Code 2.1.280 and later and to Opus 5 before that (`claude update` moves it), so say which one a `--run` on `opus` will actually get. Likewise the `sonnet` alias resolves to Sonnet 5.5 on Claude Code 2.1.284 and later and to Sonnet 5 before that. When the verdict names Opus 5 or Sonnet 5 specifically (a section 2 constraint), use the `mg-run-opus5` or `mg-run-sonnet5` executor instead and pass no `model` override: they are pinned to `claude-opus-5` and `claude-sonnet-5` at high, and an override would replace them. If the verdict gave that fallback another effort, say the run uses high.
+- `subagent_type`: `mg-run-<effort>`, whatever the tier. These executors pin the effort level: `mg-run-low`, `mg-run-medium`, `mg-run-high`, `mg-run-xhigh`, `mg-run-max`. Like the grader, they normally carry the plugin prefix, `model-grade:mg-run-<effort>`; a copy without the manifest has them unprefixed in `~/.claude/agents/`. Use whichever name the Agent tool lists, here and for every `mg-run-*` name below.
+- `model`: the verdict's alias (`haiku`, `sonnet`, `opus`, or `fable`). Always pass it; the executors declare `model: inherit` and rely on this override. Claude Code moved each alias at a different version: `opus` reaches Opus 5.5 from 2.1.280, `sonnet` Sonnet 5.5 from 2.1.284, `haiku` Haiku 5.5 from 2.1.293, and `fable` Fable 5.2 from 2.1.321. An older CLI sends the run to the previous model (`claude update` moves it), and a family alias resolves to the session's own model when the session is on that family, so a `--run` on `fable` from a Fable 5.1 session runs Fable 5.1. Say which model the `--run` will actually get. When the verdict names Opus 5 or Sonnet 5 specifically (a section 2 constraint), use the `mg-run-opus5` or `mg-run-sonnet5` executor instead and pass no `model` override: they are pinned to `claude-opus-5` and `claude-sonnet-5` at high, and an override would replace them. If the verdict gave that fallback another effort, say the run uses high.
 - `run_in_background`: `false` where the Agent tool offers it, so the result comes back in this turn and you can relay it. Where it does not, the executor runs in the background; say so, and relay its result when it arrives.
 - `prompt`: the user's request verbatim, then the context the executor needs (working directory, files named, acceptance criteria you inferred), then: "Report the outcome plainly. If you hit a refusal or the task turns out to exceed what you can do, say so in your first sentence."
 
@@ -91,12 +91,12 @@ If the Agent tool lists the executors under neither name, they are not discovere
 When the executor returns, relay its outcome. Then apply the escalation rules once, and say that you did:
 
 - It reported a refusal (a Fable executor): re-run on Opus at the same effort.
-- It reported a refusal on Sonnet 5.5: re-run on Sonnet 5 with `mg-run-sonnet5`.
+- It reported a refusal on Sonnet 5.5 or Haiku 5.5: re-run on Sonnet 5 with `mg-run-sonnet5`.
 - It reported a failure that matches an `escalate_if` condition: re-run one step up, next effort level first, next tier if already at xhigh.
 
 Do not loop beyond one escalation without asking. Do not use `--run` for a prompt that depends on this session's conversation history, because the executor starts with none; say so and let the user decide.
 
-A subagent also carries startup overhead: it inherits the session's tool and skill definitions, which in a session with many MCP servers can be tens of thousands of (mostly cached) tokens before it does anything. So `--run` pays off when the executor's work is substantial or the session model is much pricier than the verdict; for a tier-0 task with a few lines of output, say that answering in-session is cheaper than spawning, and let the user choose.
+A subagent also carries startup overhead: it inherits the session's tool and skill definitions, which in a session with many MCP servers can be tens of thousands of (mostly cached) tokens before it does anything. Haiku 5.5 bills a prompt over 100K tokens at five times its base rate, so a Haiku executor loses much of its price advantage in such a session. So `--run` pays off when the executor's work is substantial or the session model is much pricier than the verdict; for a tier-0 task with a few lines of output, say that answering in-session is cheaper than spawning, and let the user choose.
 
 ## 5. When a verdict looks wrong
 
@@ -116,9 +116,9 @@ These do not grade anything. Run the command, show its output, and stop.
 - `references/model-profiles.md`: documented strengths, prices, and constraints per model, with quotes.
 - `references/sources.md` and `references/sources.json`: provenance; the JSON manifest holds the hash of every tracked page.
 - `references/UPDATING.md`: the maintainer checklist for a new model release.
-- `scripts/grade.py`: the same grader as a script, via the Claude API (Sonnet 5, structured output) or a headless `claude -p` call. For pipelines and for the evals.
+- `scripts/grade.py`: the same grader as a script, via the Claude API (Haiku 5.5, structured output) or a headless `claude -p` call. For pipelines and for the evals.
 - `scripts/verdict_schema.json`: the verdict's JSON schema.
-- `scripts/refresh_docs.py`, `scripts/update.ps1`, `scripts/update.sh`: the `refresh` and `update` subcommands.
+- `scripts/refresh_docs.py`, `scripts/update.ps1`, `scripts/update.sh`: the `refresh` and `update` subcommands. `scripts/check_quotes.py`: checks the quoted docs passages against the cached pages.
 - `assets/agents/`: the subagent definitions, registered by `.claude-plugin/plugin.json`: the grader `mg-grade` and the `mg-run-*` executors. `assets/mg/SKILL.md`: the `/mg` alias.
 - `evals/`: labeled prompts and the runner that scores the grader against them.
 - `VERSION`, `CHANGELOG.md`, `install.ps1`, `install.sh`, `INSTALL.md`: release and installation.
