@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.4 (2026-11-15)
+
+- `/mg` no longer pins a model (#14). The alias set `model: sonnet` and `effort: medium` without `context: fork`, so its one turn, which only calls the `model-grade` skill, ran inline on Sonnet 5.5 (the `sonnet` alias from Claude Code 2.1.284). Prompt caches are per model, so that turn wrote the whole conversation to a usually cold cache, and `model-grade` then wrote it again on Sonnet 5. The alias turn now stays on the session model, whose cache is warm, and `model-grade`'s own pin is the only switch: one full-context cache write per `/mg` instead of two, the same as `/model-grade`. Grades are unchanged.
+- An installed `~/.claude/skills/mg/SKILL.md` keeps the old fields until `/mg update` copies the new alias out.
+
 ## 1.4.3 (2026-10-07)
 
 - The `--run` executors no longer load twice (#12). Every install puts the whole repository at `~/.claude/skills/model-grade`, `.claude-plugin/plugin.json` included, and since Claude Code 2.1.157 a skills folder holding that manifest loads as the plugin `model-grade@skills-dir`, which registers the seven executors as `model-grade:mg-run-*`. The installers and `update` also copied them into `~/.claude/agents/`, so each executor was listed twice (about 0.8k tokens a turn). They now copy the executors only for a folder without the manifest, and move copies an earlier release left in `~/.claude/agents/` to `~/.claude/model-grade-backups/<timestamp>-agents/`. Other files in `~/.claude/agents/` are left alone.
