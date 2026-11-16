@@ -14,9 +14,9 @@ permissions:
 # installed copy, and check that skills/ ends up holding only model-grade and mg, with every
 # backup under model-grade-backups/. Then they install from a clone that already sits at
 # skills/model-grade (the git route), which must leave that folder alone. Because the package
-# carries .claude-plugin/plugin.json, which registers the executors, a stale executor copy in
-# agents/ must move to the backups and nothing may be copied there; a copy without the manifest
-# must still get the executors in agents/.
+# carries .claude-plugin/plugin.json, which registers the grader and the executors, a stale
+# executor copy in agents/ must move to the backups and nothing may be copied there; a copy
+# without the manifest must still get the grader and the executors in agents/.
 
 jobs:
   check:
@@ -72,6 +72,7 @@ jobs:
           test -f "$home/skills/mg/SKILL.md"
           test -f "$home/skills/model-grade/.claude-plugin/plugin.json"
           if ls "$home/agents"/mg-run-*.md >/dev/null 2>&1; then echo "executor copies left in agents/"; exit 1; fi
+          if [ -e "$home/agents/mg-grade.md" ]; then echo "grader copy left in agents/"; exit 1; fi
           test -f "$home/agents/my-own-agent.md"
           ls "$home"/model-grade-backups/*-agents/mg-run-low.md >/dev/null
           dirs="$(ls -1 "$home/skills" | sort | paste -sd, -)"
@@ -90,6 +91,7 @@ jobs:
           test ! -e "$home/model-grade-backups"
           test "$(ls -1 "$home/skills" | sort | paste -sd, -)" = "mg,model-grade"
           if ls "$home/agents"/mg-run-*.md >/dev/null 2>&1; then echo "copied executors despite the manifest"; exit 1; fi
+          if [ -e "$home/agents/mg-grade.md" ]; then echo "copied the grader despite the manifest"; exit 1; fi
           echo "in-place install ok"
       - name: Install a copy without the plugin manifest (executors copied)
         run: |
@@ -102,7 +104,8 @@ jobs:
           test ! -e "$home/skills/model-grade/.claude-plugin"
           count="$(ls "$home/agents"/mg-run-*.md | wc -l)"
           test "$count" -ge 7
-          echo "no-manifest install ok, $count executors"
+          test -f "$home/agents/mg-grade.md"
+          echo "no-manifest install ok, the grader and $count executors"
 
   windows:
     name: Installer smoke test (Windows)
@@ -135,7 +138,7 @@ jobs:
           if (-not (Test-Path "$target\skills\model-grade\SKILL.md")) { throw "skill missing" }
           if (-not (Test-Path "$target\skills\mg\SKILL.md")) { throw "alias missing" }
           if (-not (Test-Path "$target\skills\model-grade\.claude-plugin\plugin.json")) { throw "plugin manifest missing" }
-          if (Test-Path "$target\agents\mg-run-*.md") { throw "executor copies left in agents\" }
+          if ((Test-Path "$target\agents\mg-run-*.md") -or (Test-Path "$target\agents\mg-grade.md")) { throw "agent copies left in agents\" }
           if (-not (Test-Path "$target\agents\my-own-agent.md")) { throw "an unrelated agent was moved" }
           if (-not (Test-Path "$target\model-grade-backups\*-agents\mg-run-low.md")) { throw "stale executor copy was not backed up" }
           $dirs = (Get-ChildItem "$target\skills" -Directory | Select-Object -ExpandProperty Name | Sort-Object) -join ","
@@ -175,7 +178,7 @@ jobs:
           if (Test-Path "$target\model-grade-backups") { throw "in-place install made a backup" }
           $dirs = (Get-ChildItem "$target\skills" -Directory | Select-Object -ExpandProperty Name | Sort-Object) -join ","
           if ($dirs -ne "mg,model-grade") { throw "skills/ holds [$dirs]" }
-          if (Test-Path "$target\agents\mg-run-*.md") { throw "copied executors despite the manifest" }
+          if ((Test-Path "$target\agents\mg-run-*.md") -or (Test-Path "$target\agents\mg-grade.md")) { throw "copied agents despite the manifest" }
           Write-Host "in-place install ok"
       - name: Install a copy without the plugin manifest (executors copied)
         shell: pwsh
@@ -189,4 +192,5 @@ jobs:
           if (Test-Path "$target\skills\model-grade\.claude-plugin") { throw "manifest appeared in a copy without one" }
           $agents = (Get-ChildItem "$target\agents" -Filter "mg-run-*.md").Count
           if ($agents -lt 7) { throw "expected at least seven executors, found $agents" }
-          Write-Host "no-manifest install ok, $agents executors"
+          if (-not (Test-Path "$target\agents\mg-grade.md")) { throw "the grader agent was not copied" }
+          Write-Host "no-manifest install ok, the grader and $agents executors"

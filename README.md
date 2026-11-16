@@ -18,11 +18,11 @@ Built from Anthropic's prompt-engineering and model pages (see `references/sourc
 - Applies the documented hard constraints: Haiku's 200K window, dense charts and screenshots go to Opus 5.5, biology and dual-use security stay off Fable, Opus 5.5, and Sonnet 5.5 because of their classifiers, forced tool calls and thinking-disabled pipelines need Opus 5 or Sonnet 5, and so on.
 - Picks a tier (Haiku 4.5, Sonnet 5.5, Opus 5.5, Fable 5.1, with Sonnet 5 and Opus 5 kept only as classifier and API-compatibility fallbacks) and an effort level (low to max), then runs a cross-tier check: would the stronger model at lower effort be cheaper per completed task? The docs say it often is, and the rubric says when.
 - Reports a verdict with a cheaper alternative and concrete escalation triggers, so a cheap first attempt is safe.
-- Grades on Sonnet 5 at medium effort: the skill's frontmatter switches the invoking turn to that model, pinned by ID so the grader stays the one the evals were calibrated on, and the grade costs cents.
+- Grades on Sonnet 5 at medium effort in a small subagent, `mg-grade`, pinned by ID so the grader stays the one the evals were calibrated on. Your conversation stays on its own model, so its prompt cache is not rewritten for a grade, and the rubric never enters your context.
 
 ## Install
 
-Everything installs at the user level, so it works in every project: `~/.claude/skills/model-grade` (this repository) and `~/.claude/skills/mg` (the alias, from `assets/mg`). Because the repository carries `.claude-plugin/plugin.json`, Claude Code 2.1.157 and later loads the skill folder as the plugin `model-grade@skills-dir`, which registers the executors from `assets/agents` as `model-grade:mg-run-*`; leave it enabled in `/plugin`, since disabling it also removes `/model-grade`. Pick one route:
+Everything installs at the user level, so it works in every project: `~/.claude/skills/model-grade` (this repository) and `~/.claude/skills/mg` (the alias, from `assets/mg`). Because the repository carries `.claude-plugin/plugin.json`, Claude Code 2.1.157 and later loads the skill folder as the plugin `model-grade@skills-dir`, which registers the grader and the executors from `assets/agents` as `model-grade:mg-grade` and `model-grade:mg-run-*`; leave it enabled in `/plugin`, since disabling it also removes `/model-grade`. Pick one route:
 
 - **Drag and drop, no terminal.** Download `model-grade-install.zip` from the [latest release](https://github.com/AndrewStifora/model-grade/releases/latest) (or the repository zip from the green Code button), drag it into a Claude Code chat, and send: `Install the skill package in this zip by following its INSTALL.md exactly.`
 - **Scripts.** From a clone or an unzipped copy: `pwsh -File install.ps1` on Windows, `bash install.sh` on macOS or Linux.
@@ -87,10 +87,10 @@ The API backend calls `claude-sonnet-5` with `output_config.effort = medium`, a 
 ## Repository layout
 
 ```
-SKILL.md                the skill; runs on Sonnet 5 at medium (frontmatter, pinned by ID)
+SKILL.md                the skill; runs on the session model and hands grading to the mg-grade subagent
 references/             rubric.md, model-profiles.md, sources.md + sources.json, UPDATING.md
 scripts/                grade.py, verdict_schema.json, refresh_docs.py, update.ps1/.sh, check_repo.py, build_package.py
-assets/                 mg/SKILL.md (the alias) and agents/ (the executors), installed outside the skill folder
+assets/                 mg/SKILL.md (the alias) and agents/ (the grader, pinned to Sonnet 5 at medium, and the executors)
 evals/                  evals.json (24 labeled prompts) and run_evals.py
 docs/                   eval-report.md, social-preview.py + the images
 .claude-plugin/         plugin and marketplace manifests
@@ -102,7 +102,8 @@ docs/                   eval-report.md, social-preview.py + the images
 - A skill cannot change the session's own model. Without `--run`, the verdict tells you which model to pick in the model menu.
 - `--run` executors start without the conversation history and inherit the session's tool definitions, which in an MCP-heavy setup is tens of thousands of cached tokens; for tiny tasks the skill says in-session is cheaper.
 - The Claude Code `opus` alias resolves to Opus 5.5 from v2.1.280 and to Opus 5 before that (`claude update`). The verdict names the exact model; `--run` reports which one the alias will actually hit.
-- If your organization's model allowlist excludes Sonnet, or auto mode declines the switch, grading runs on the session model. The rubric is the same.
+- In an interactive session Claude Code runs subagents in the background, so the verdict arrives a few seconds after `/mg` rather than in the same turn.
+- If your organization's model allowlist excludes Sonnet 5, Claude Code runs the grader on a fallback model instead. The rubric is the same.
 - Fable 5.1 and Opus 5.5 picks come with a note about their safety classifiers; in an API pipeline configure the server-side fallback.
 
 ## Contributing and security
