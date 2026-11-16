@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2 (2026-11-16)
+
+- `/mg` no longer reads every argument as "no arguments" (#21). The alias used `$ARGUMENTS` twice: once on the line that carries the arguments, and again in the fallback sentence, as "if the arguments line is empty or still reads `$ARGUMENTS`, pass no arguments". Claude Code replaces every copy, so on `/mg version` that sentence read "still reads `version`", a condition every call met. Taken literally, the alias passed nothing on, and `/mg version` would grade the previous request. The fallback now describes an empty or unfilled line without naming the token. `check_repo.py` fails if the alias holds `$ARGUMENTS` more than once.
+- An installed `~/.claude/skills/mg/SKILL.md` keeps the old sentence until `/mg update` copies the new alias out.
+
 ## 1.5.1 (2026-11-16)
 
 - `graphify-out/`, the knowledge graph `/graphify` writes into a repository, no longer leaks into commits or local zips (#19). It is now in `.gitignore`, and `scripts/build_package.py` skips it, so a transfer zip rebuilt from the live clone at `~/.claude/skills/model-grade` leaves the graph out. The release zip was never affected: CI builds it from a clean checkout. Nothing the skill does changed.
